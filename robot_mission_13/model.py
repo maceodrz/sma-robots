@@ -131,6 +131,9 @@ class WasteModelRed(mesa.Model):
         x, y = pos
         return 0 <= x < self.width and 0 <= y < self.height and agent.max_radioactivity >= self.get_radioactivity(x, y)
 
+    def is_collect_possible(self, agent, pos): #TODO
+        return True
+    
     def do(self, agent, action):
         """Advance the model by one step."""
         
@@ -146,7 +149,10 @@ class WasteModelRed(mesa.Model):
             
         elif action == Action.MOVE_DOWN and self.is_movement_possible( agent, (agent.pos[0], agent.pos[1] + 1)) :
             self.grid.move_agent(agent, (agent.pos[0], agent.pos[1] + 1))
-        return agent.percept()
+        elif action == Action.COLLECT and self.is_collect_possible(agent, agent.pos): #TODO
+            self.grid.remove_agent(agent)
+        else:
+            pass
     
     def step(self):
         self.agents.shuffle_do("step")

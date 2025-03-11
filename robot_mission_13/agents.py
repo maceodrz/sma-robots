@@ -18,7 +18,7 @@ class Robot(Agent):
     def __init__(self, model, unique_id):
         super().__init__(model)
         self.percepts = {}
-        self.knowledge = {"Near_waste": {"C": None, "L": None, "R": None, "T": None, "D": None } , "carrying": []}
+        self.knowledge = {"Near_waste": {"C": [], "L": [], "R": [], "T": [], "D": []} , "carrying": []}
         self.unique_id = unique_id
         self.action = None
         
@@ -58,7 +58,7 @@ class GreenAgent(Robot):
         elif len(knowledge["carrying"]) == 2:
             return Action.FUSION
         # If there is Green Waste nearby, collect it
-        elif knowledge["Near_waste"]["C"] is not None :
+        elif Colors.GREEN in knowledge["Near_waste"]["C"]:
             return Action.COLLECT
         # If there is no Green Waste at the center, random move
         else:
@@ -89,7 +89,7 @@ class YellowAgent(Robot):
         elif len(knowledge["carrying"]) == 2:
             return Action.FUSION
         # If there is Green Waste nearby, collect it
-        elif knowledge["Near_waste"]["C"] is not None :
+        elif Colors.YELLOW in knowledge["Near_waste"]["C"]:
             return Action.COLLECT
         # If there is no Green Waste at the center, random move
         else:
@@ -104,6 +104,21 @@ class RedAgent(Robot):
         self.max_radioactivity = 1
     def percept(self):
         pass
-    
+    def deliberate_i(self, knowledge):
+        # If carrying 1 Red waste
+        if len(knowledge["carrying"]) == 1 and knowledge["carrying"][0] == Colors.RED:
+            # If the agent is not at the east of yellow zone, move right
+            if not isinstance(WasteDisposalAgent , knowledge["Near_Waste"]["C"])  : #TODO change this to the correct position
+                return Action.MOVE_LEFT
+            else:
+            # Drop the Red Waste in the dustbin
+                return Action.DROP
+        # If there is Red Waste nearby, collect it
+        elif Colors.RED in knowledge["Near_waste"]["C"]:
+            return Action.COLLECT
+        # If there is no Green Waste at the center, random move
+        else:
+            return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
+        
     def deliberate(self, knowledge):
         return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
