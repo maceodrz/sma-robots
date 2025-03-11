@@ -1,8 +1,32 @@
 from model import WasteModelRed
+from objects import RadioactivityAgent
 from agents import Robot, GreenAgent, YellowAgent, RedAgent
 from mesa.visualization import SolaraViz, make_plot_component, make_space_component # type: ignore
 
 def agent_portrayal(agent):
+    if isinstance(agent, RadioactivityAgent):
+        if agent.get_radioactivity() > 0.66:
+            return {
+                "color": "#FF0000CC",  # Rouge avec transparence 0.8
+                "size": 300,
+                "layer": "background",
+                "Shape": "rect",
+            }
+        elif agent.get_radioactivity() > 0.33:
+            return {
+                "color": "#FFFC00CC",  # Jaune avec transparence 0.8
+                "size": 200,
+                "layer": "background",
+                "Shape": "rect",
+            }
+        else:
+            return {
+                "color": "#00FF00CC",  # Vert avec transparence 0.8
+                "size": 200,
+                "layer": "background",
+                "Shape": "rect",
+            }
+            
     if isinstance(agent, GreenAgent):
         return {
             "color": "green",
