@@ -25,9 +25,13 @@ class WasteModelRed(mesa.Model):
         self.grid = MultiGrid(width, height, torus=False)
 
         self.width_z3 = int(width * proportion_z3)
+        print("width_z3", self.width_z3)
         self.width_z2 = int(width * (proportion_z2))
+        print("width_z2", self.width_z2)
         self.width_z1 = width - self.width_z3 - self.width_z2
+        print("width_z1", self.width_z1)
         self.width = width
+        print("width", self.width)
         self.height = height
         
         self.num_green_agents = num_green_agents
@@ -44,15 +48,15 @@ class WasteModelRed(mesa.Model):
             if self.width_z1 > 0:
                 for i in range(self.width_z1):
                     agent = RadioactivityAgent(self, radiocativity=0.1)
-                    self.grid.place_agent(agent, (j, i))
+                    self.grid.place_agent(agent, (i, j))
             if self.width_z2 > 0:
                 for i in range(self.width_z2):
                     agent = RadioactivityAgent(self, radiocativity=0.5)
-                    self.grid.place_agent(agent, (j, i + self.width_z1))
+                    self.grid.place_agent(agent, ( i + self.width_z1, j))
             if self.width_z3 > 0:
                 for i in range(self.width_z3):
                     agent = RadioactivityAgent(self, radiocativity=0.9)
-                    self.grid.place_agent(agent, (j, i + self.width_z1 + self.width_z2))
+                    self.grid.place_agent(agent, ( i + self.width_z1 + self.width_z2, j))
 
         # Create Waste agents
             
@@ -85,7 +89,7 @@ class WasteModelRed(mesa.Model):
             x = self.random.choices(range(self.width_z3), k=self.num_red_waste)
             y = self.random.choices(range(self.height), k=self.num_red_waste)
             for a, i, j in zip(agents, x, y):
-                self.grid.place_agent(a, (i + self.width_z1 + self.width_z2, i))
+                self.grid.place_agent(a, (i + self.width_z1 + self.width_z2, j))
         else:
             self.num_red_waste = 0
             print("No red waste in Zone 3")
