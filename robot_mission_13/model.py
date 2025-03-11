@@ -1,6 +1,8 @@
 import mesa
 from objects import RadioactivityAgent, WasteAgent, WasteDisposalAgent, Colors
 from agents import GreenAgent, YellowAgent, RedAgent
+from mesa.space import MultiGrid
+from mesa.datacollection import DataCollector
 
 class WasteModelRed(mesa.Model):
     """A model with some number of agents."""
@@ -15,7 +17,7 @@ class WasteModelRed(mesa.Model):
         """
         super().__init__(seed=seed)
 
-        self.grid = mesa.grid.MultiGrid(width, height, torus=False)
+        self.grid = MultiGrid(width, height, torus=False)
 
         self.width_z3 = int(width * proportion_z3)
         self.width_z2 = int(width * (proportion_z2))
@@ -30,7 +32,7 @@ class WasteModelRed(mesa.Model):
         self.num_green_waste = num_green_waste
         self.num_yellow_waste = num_yellow_waste
         self.num_red_waste = num_red_waste
-        
+
         # Create Radioactivity agents
         for j in range(self.height):
             if self.width_z1 > 0:
@@ -113,3 +115,8 @@ class WasteModelRed(mesa.Model):
             x = self.random.choices(range(self.width_z3), k=1)
             y = self.random.choices(range(self.height), k=1)
             self.grid.place_agent(agent, (x[0] + self.width_z1 + self.width_z2, y[0]))
+
+
+    def do(self):
+        """Advance the model by one step."""
+        
