@@ -12,7 +12,7 @@ class WasteModelRed(mesa.Model):
         self._next_id += 1
         return self._next_id
 
-    def __init__(self, width=10, height=10, num_green_agents=0, num_yellow_agents=0,num_red_agents=3, num_green_waste=3, num_yellow_waste=0, num_red_waste=5,proportion_z3=1, proportion_z2=0, seed=None):
+    def __init__(self, width=10, height=10, num_green_agents=0, num_yellow_agents=0,num_red_agents=3, num_green_waste=3, num_yellow_waste=0, num_red_waste=5,proportion_z3=0.5, proportion_z2=0, seed=None):
         """Initialize a MoneyModel instance.
 
         Args:
@@ -147,5 +147,12 @@ class WasteModelRed(mesa.Model):
     
     def step(self):
         self.agents.shuffle_do("step")
+        
+    def get_radioactivity(self, i,j):
+        for agent in self.grid.get_cell_list_contents([(i,j)]):
+            if isinstance(agent, RadioactivityAgent):
+                return agent.get_radioactivity()
+        return 0.7
+        
             
             
