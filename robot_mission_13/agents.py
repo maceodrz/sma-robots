@@ -3,8 +3,6 @@ from mesa import Agent, Model
 from mesa.space import MultiGrid
 import random
 from objects import WasteAgent, RadioactivityAgent, WasteDisposalAgent, Colors
-
-
 from enum import Enum
 
 class Action(Enum):
@@ -17,7 +15,7 @@ class Action(Enum):
     DROP = 6
 
 class Robot(Agent):
-    def __init__(self, unique_id, model):
+    def __init__(self, model, unique_id):
         super().__init__(model)
         self.percepts = {}
         self.knowledge = {"Near_waste": {"C": None, "L": None, "R": None, "T": None, "D": None } , "carrying": []}
@@ -40,8 +38,8 @@ class Robot(Agent):
 
 
 class GreenAgent(Robot):
-    def __init__(self, unique_id, model):
-        super().__init__(unique_id, model)
+    def __init__(self, model, unique_id):
+        super().__init__(model, unique_id)
         
     def percept(self):
         pass
@@ -69,8 +67,8 @@ class GreenAgent(Robot):
 
 
 class YellowAgent(Robot):
-    def __init__(self, unique_id, model):
-        super().__init__(unique_id, model)
+    def __init__(self, model, unique_id):
+        super().__init__(model, unique_id)
         
     def percept(self):
         pass
@@ -94,8 +92,8 @@ def deliberate(self, knowledge):
         else:
             return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
 class RedAgent(Robot):
-    def __init__(self, unique_id, model):
-        super().__init__(unique_id, model)
+    def __init__(self, model, unique_id):
+        super().__init__(model, unique_id)
         
     def percept(self):
         pass
