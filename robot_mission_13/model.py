@@ -127,10 +127,14 @@ class WasteModelRed(mesa.Model):
             y = self.random.choices(range(self.height), k=1)
             self.grid.place_agent(agent, (x[0] + self.width_z1 + self.width_z2, y[0]))
 
-
+    def is_movement_possible(self, agent, pos):
+        x, y = pos
+        
+        return 0 <= x < self.width and 0 <= y < self.height and agent.max_radioactivity >= self.grid[x][y].radioactivity
 
     def do(self, agent, action):
         """Advance the model by one step."""
+        
 
         if action == Action.MOVE_LEFT and agent.pos[0] > 0:
             self.grid.move_agent(agent, (agent.pos[0] - 1, agent.pos[1]))

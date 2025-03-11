@@ -30,7 +30,7 @@ class Robot(Agent):
     
     def step_agent(self): 
         #self.knowledge = self.percept()
-        #self.action = self.deliberate(self.knowledge) 
+        self.action = self.deliberate(self.knowledge) 
         self.percepts = self.model.do(self, self.action)
     
     def step(self):
@@ -40,11 +40,12 @@ class Robot(Agent):
 class GreenAgent(Robot):
     def __init__(self, model, unique_id):
         super().__init__(model, unique_id)
+        self.max_radioactivity = 1/3
         
     def percept(self):
         pass
     
-    def deliberate(self, knowledge):
+    def deliberate_i(self, knowledge):
         # If carrying 1 Yellow Waste
         if len(knowledge["carrying"]) == 1 and knowledge["carrying"][0] == Colors.YELLOW:
             # If the agent is not at east of green zone, move right
@@ -62,18 +63,19 @@ class GreenAgent(Robot):
         # If there is no Green Waste at the center, random move
         else:
             return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
-        
-        
+    def deliberate(self, knowledge):
+        return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
 
 
 class YellowAgent(Robot):
     def __init__(self, model, unique_id):
         super().__init__(model, unique_id)
+        self.max_radioactivity = 1/3
         
     def percept(self):
         pass
     
-def deliberate(self, knowledge):
+def deliberate_i(self, knowledge):
         # If carrying 1 Red waste
         if len(knowledge["carrying"]) == 1 and knowledge["carrying"][0] == Colors.RED:
             # If the agent is not at the east of yellow zone, move right
@@ -91,10 +93,13 @@ def deliberate(self, knowledge):
         # If there is no Green Waste at the center, random move
         else:
             return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
+    def deliberate(self, knowledge):
+        return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
+
 class RedAgent(Robot):
     def __init__(self, model, unique_id):
         super().__init__(model, unique_id)
-        
+        self.max_radioactivity = 1
     def percept(self):
         pass
     
