@@ -1,5 +1,11 @@
 import mesa
 
+
+class Colors:
+    GREEN = 0
+    YELLOW = 1
+    RED = 2
+
 class RadioactivityAgent(mesa.Agent):
     def __init__(self, model, radiocativity):
         """initialize a RadioactivityAgent instance.
@@ -9,7 +15,7 @@ class RadioactivityAgent(mesa.Agent):
         """
         super().__init__(model)
         self.radioactivity = radiocativity
-        self.name = 'RadioactivityAgent'
+        self.unique_id = model.next_id()
     
     def get_radioactivity(self):
         return self.radioactivity
@@ -22,21 +28,24 @@ class WasteAgent(mesa.Agent):
             model: A model instance
         """
         super().__init__(model)
-        self.color = color
-        self.name = 'WasteAgent'
+        if color == None:
+            self.init_color(carried)
+        else:
+            self.color = color
         self.carried = carried
+        self.unique_id = model.next_id()
     
     def init_color(self, carried):
         if carried == False:
             cellmates = self.model.grid.get_cell_list_contents([self.pos])
             for agent in cellmates:
-                if agent.name == 'RadioactivityAgent':
+                if agent.is_instance(RadioactivityAgent):
                     if agent.get_radioactivity() > 0.66:
-                        self.color = 'Red'
+                        self.color = Colors.RED
                     elif agent.get_radioactivity() > 0.33:
-                        self.color = 'Yellow'
+                        self.color = Colors.YELLOW
                     else:
-                        self.color = 'Green'
+                        self.color = Colors.GREEN
                     break
     
     def destruct_agent(self):
@@ -50,5 +59,4 @@ class WasteDisposalAgent(mesa.Agent):
             model: A model instance
         """
         super().__init__(model)
-        self.name = 'WasteDisposalAgent'
-    
+        self.unique_id = model.next_id()
