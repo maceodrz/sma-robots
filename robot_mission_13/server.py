@@ -5,12 +5,12 @@ from mesa.visualization import SolaraViz, make_plot_component, make_space_compon
 def agent_portrayal(agent):
     if isinstance(agent, GreenAgent):
         return {
-            "color": "tab:green",
+            "color": "green",
             "size": 50,
         }
     elif isinstance(agent, YellowAgent):
         return {
-            "color": "tab:yellow",
+            "color": "yellow",
             "size": 50,
         }
     elif isinstance(agent, RedAgent):
@@ -26,11 +26,11 @@ def agent_portrayal(agent):
 
 
 model_params = {
-    'width':60,
+    'width':20,
     'height':10,
-    'num_green_agents':0,
-    'num_yellow_agents':0,
-    'num_red_agents':1,
+    'num_green_agents':3,
+    'num_yellow_agents':3,
+    'num_red_agents':3,
     'num_green_waste':3,
     'num_yellow_waste':0,
     'num_red_waste':5,

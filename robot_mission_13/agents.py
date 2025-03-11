@@ -63,6 +63,7 @@ class GreenAgent(Robot):
         # If there is no Green Waste at the center, random move
         else:
             return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
+        
     def deliberate(self, knowledge):
         return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
 
@@ -70,12 +71,12 @@ class GreenAgent(Robot):
 class YellowAgent(Robot):
     def __init__(self, model, unique_id):
         super().__init__(model, unique_id)
-        self.max_radioactivity = 1/3
+        self.max_radioactivity = 2/3
         
     def percept(self):
         pass
     
-def deliberate_i(self, knowledge):
+    def deliberate_i(self, knowledge):
         # If carrying 1 Red waste
         if len(knowledge["carrying"]) == 1 and knowledge["carrying"][0] == Colors.RED:
             # If the agent is not at the east of yellow zone, move right
@@ -93,6 +94,7 @@ def deliberate_i(self, knowledge):
         # If there is no Green Waste at the center, random move
         else:
             return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
+        
     def deliberate(self, knowledge):
         return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
 
