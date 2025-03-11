@@ -21,7 +21,7 @@ class RadioactivityAgent(mesa.Agent):
         return self.radioactivity
 
 class WasteAgent(mesa.Agent):
-    def __init__(self, model, carried, color = None):
+    def __init__(self, model, carried=False, color = None):
         """initialize a WasteAgent instance.
 
         Args:
@@ -39,7 +39,7 @@ class WasteAgent(mesa.Agent):
         if carried == False:
             cellmates = self.model.grid.get_cell_list_contents([self.pos])
             for agent in cellmates:
-                if agent.is_instance(RadioactivityAgent):
+                if isinstance(agent, RadioactivityAgent):
                     if agent.get_radioactivity() > 0.66:
                         self.color = Colors.RED
                     elif agent.get_radioactivity() > 0.33:

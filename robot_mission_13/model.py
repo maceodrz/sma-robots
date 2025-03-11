@@ -6,6 +6,11 @@ from mesa.datacollection import DataCollector
 
 class WasteModelRed(mesa.Model):
     """A model with some number of agents."""
+    
+    def next_id(self):
+        """Generate the next unique ID for an agent."""
+        self._next_id += 1
+        return self._next_id
 
     def __init__(self, width=10, height=10, num_green_agents=0, num_yellow_agents=0,num_red_agents=3, num_green_waste=3, num_yellow_waste=0, num_red_waste=5,proportion_z3=1, proportion_z2=0, seed=None):
         """Initialize a MoneyModel instance.
@@ -33,6 +38,7 @@ class WasteModelRed(mesa.Model):
         self.num_yellow_waste = num_yellow_waste
         self.num_red_waste = num_red_waste
 
+        self._next_id = 0
         # Create Radioactivity agents
         for j in range(self.height):
             if self.width_z1 > 0:
@@ -110,6 +116,7 @@ class WasteModelRed(mesa.Model):
         
         
         for i in range(self.num_red_agents):
+            print("creating red agent")
             unique_id = self.next_id()
             agent = RedAgent(self, unique_id)
             x = self.random.choices(range(self.width_z3), k=1)
@@ -133,6 +140,8 @@ class WasteModelRed(mesa.Model):
         elif action == Action.MOVE_DOWN and agent.pos[1] < self.height - 1:
             self.grid.move_agent(agent, (agent.pos[0], agent.pos[1] + 1))
         return agent.percept()
-            
+    
+    def step(self):
+        self.agents.shuffle_do("step")
             
             
