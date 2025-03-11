@@ -1,6 +1,6 @@
 import mesa
 from objects import RadioactivityAgent, WasteAgent, WasteDisposalAgent, Colors
-from agents import GreenAgent, YellowAgent, RedAgent
+from agents import GreenAgent, YellowAgent, RedAgent, Action
 from mesa.space import MultiGrid
 from mesa.datacollection import DataCollector
 
@@ -117,6 +117,22 @@ class WasteModelRed(mesa.Model):
             self.grid.place_agent(agent, (x[0] + self.width_z1 + self.width_z2, y[0]))
 
 
-    def do(self):
+
+    def do(self, agent, action):
         """Advance the model by one step."""
-        
+
+        if action == Action.MOVE_LEFT and agent.pos[0] > 0:
+            self.grid.move_agent(agent, (agent.pos[0] - 1, agent.pos[1]))
+            
+        elif action == Action.MOVE_RIGHT and agent.pos[0] < self.width - 1:
+            self.grid.move_agent(agent, (agent.pos[0] + 1, agent.pos[1]))
+            
+        elif action == Action.MOVE_UP and agent.pos[1] > 0:
+            self.grid.move_agent(agent, (agent.pos[0], agent.pos[1] - 1))
+            
+        elif action == Action.MOVE_DOWN and agent.pos[1] < self.height - 1:
+            self.grid.move_agent(agent, (agent.pos[0], agent.pos[1] + 1))
+        return agent.percept()
+            
+            
+            

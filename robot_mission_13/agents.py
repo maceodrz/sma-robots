@@ -2,7 +2,7 @@ import mesa
 from mesa import Agent, Model
 from mesa.space import MultiGrid
 import random
-from objects import WasteAgent, RadioactivityAgent, WasteDisposalAgent
+from objects import WasteAgent, RadioactivityAgent, WasteDisposalAgent, Colors
 
 
 from enum import Enum
@@ -30,10 +30,13 @@ class Robot(Agent):
     def deliberate(self):
         pass   
     
-    def step_agent (self): 
-        self.knowledge = self.percept()
-        self.action = self.deliberate(self.knowledge) 
+    def step_agent(self): 
+        #self.knowledge = self.percept()
+        #self.action = self.deliberate(self.knowledge) 
         self.percepts = self.model.do(self, self.action)
+    
+    def step(self):
+        self.step_agent()
 
 
 class GreenAgent(Robot):
@@ -44,11 +47,13 @@ class GreenAgent(Robot):
         pass
     
     def deliberate(self, knowledge):
-        # If carrying 1 Yellow Waste go to the right
-        if len(knowledge["carrying"]) == 1 and knowledge["carrying"][0]==1:
-            if self.pos[0] > 1:
-                return Action.MOVE_RIGHT
+        # If carrying 1 Yellow Waste
+        if len(knowledge["carrying"]) == 1 and knowledge["carrying"][0] == Colors.YELLOW:
+            # If the agent is not at east of green zone, move right
+            if self.pos[0] > 1: #TODO change this to the actual position of the green zone
+                return Action.MOVE_LEFT
             else:
+            # Drop the Yellow Waste
                 return Action.DROP
         # If carrying 2 Green Wastes, delete them and create 1 Yellow Waste
         elif len(knowledge["carrying"]) == 2:
@@ -70,9 +75,24 @@ class YellowAgent(Robot):
     def percept(self):
         pass
     
-    def deliberate(self, knowledge):
-        pass
-
+def deliberate(self, knowledge):
+        # If carrying 1 Red waste
+        if len(knowledge["carrying"]) == 1 and knowledge["carrying"][0] == Colors.RED:
+            # If the agent is not at the east of yellow zone, move right
+            if self.pos[0] > 1: #TODO change this to the correct position
+                return Action.MOVE_LEFT
+            else:
+            # Drop the Red Waste
+                return Action.DROP
+        # If carrying 2 Yellow Wastes, delete them and create 1 Yellow Waste
+        elif len(knowledge["carrying"]) == 2:
+            return Action.FUSION
+        # If there is Green Waste nearby, collect it
+        elif knowledge["Near_waste"]["C"] is not None :
+            return Action.COLLECT
+        # If there is no Green Waste at the center, random move
+        else:
+            return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
 class RedAgent(Robot):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
@@ -81,5 +101,4 @@ class RedAgent(Robot):
         pass
     
     def deliberate(self, knowledge):
-        pass
-
+        return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
