@@ -12,7 +12,7 @@ class WasteModelRed(mesa.Model):
         self._next_id += 1
         return self._next_id
 
-    def __init__(self, width=10, height=10, num_green_agents=0, num_yellow_agents=0,num_red_agents=3, num_green_waste=3, num_yellow_waste=0, num_red_waste=5,proportion_z3=0.5, proportion_z2=0, seed=None):
+    def __init__(self, width=21, height=10, num_green_agents=3, num_yellow_agents=3,num_red_agents=3, num_green_waste=3, num_yellow_waste=0, num_red_waste=5,proportion_z3=1/3, proportion_z2=1/3, seed=None):
         """Initialize a MoneyModel instance.
 
         Args:
@@ -132,7 +132,11 @@ class WasteModelRed(mesa.Model):
         return 0 <= x < self.width and 0 <= y < self.height and agent.max_radioactivity >= self.get_radioactivity(x, y)
 
     def is_collect_possible(self, agent, pos): #TODO
-        return True
+        for PossibleAgent in self.grid.get_cell_list_contents([pos]):
+            
+            if isinstance(PossibleAgent, WasteAgent) and PossibleAgent.color == agent.color:
+                return PossibleAgent
+        return False
     
     def do(self, agent, action):
         """Advance the model by one step."""
@@ -140,19 +144,42 @@ class WasteModelRed(mesa.Model):
 
         if action == Action.MOVE_LEFT and self.is_movement_possible(agent, (agent.pos[0] - 1, agent.pos[1])):
             self.grid.move_agent(agent, (agent.pos[0] - 1, agent.pos[1]))
+            agent.knowledge["LastActionWorked"] = True
             
         elif action == Action.MOVE_RIGHT and self.is_movement_possible(agent, (agent.pos[0] + 1, agent.pos[1])):
             self.grid.move_agent(agent, (agent.pos[0] + 1, agent.pos[1]))
+            agent.knowledge["LastActionWorked"] = True
             
         elif action == Action.MOVE_UP and self.is_movement_possible(agent, (agent.pos[0], agent.pos[1] - 1)):
             self.grid.move_agent(agent, (agent.pos[0], agent.pos[1] - 1))
+            agent.knowledge["LastActionWorked"] = True
             
         elif action == Action.MOVE_DOWN and self.is_movement_possible( agent, (agent.pos[0], agent.pos[1] + 1)) :
             self.grid.move_agent(agent, (agent.pos[0], agent.pos[1] + 1))
-        elif action == Action.COLLECT and self.is_collect_possible(agent, agent.pos): #TODO
-            self.grid.remove_agent(agent)
+            agent.knowledge["LastActionWorked"] = True
+        elif action == Action.FUSION: #TODO
+            
+            if agent.knowledge["carrying"][0].color == agent.knowledge["carrying"][1].color:
+                
+                agent.knowledge["carrying"] = [WasteAgent.create_agents(model=self, n=1, color=Colors.YELLOW)[0]]
+                print( agent.knowledge["carrying"] )
+                agent.knowledge["LastActionWorked"] = True
+            else:
+                agent.knowledge["LastActionWorked"] = False
+        elif action == Action.COLLECT: #TODO
+            PossibleAgent = self.is_collect_possible(agent, agent.pos)
+            
+            if PossibleAgent and PossibleAgent.pos:
+                
+                
+                self.grid.remove_agent(PossibleAgent)
+                agent.knowledge["carrying"].append(PossibleAgent)
+                agent.knowledge["LastActionWorked"] = True
+            else:
+                agent.knowledge["LastActionWorked"] = False
         else:
-            pass
+            agent.knowledge["LastActionWorked"] = False
+        return agent.knowledge
     
     def step(self):
         self.agents.shuffle_do("step")

@@ -28,7 +28,7 @@ class WasteAgent(mesa.Agent):
             model: A model instance
         """
         super().__init__(model)
-        if color == None:
+        if color is None:
             self.init_color(carried)
         else:
             self.color = color
@@ -36,7 +36,7 @@ class WasteAgent(mesa.Agent):
         self.unique_id = model.next_id()
     
     def init_color(self, carried):
-        if carried == False:
+        if not carried:
             cellmates = self.model.grid.get_cell_list_contents([self.pos])
             for agent in cellmates:
                 if isinstance(agent, RadioactivityAgent):
