@@ -168,8 +168,8 @@ class WasteModelRed(mesa.Model):
         movement_actions = {
             Action.MOVE_LEFT: (-1, 0),
             Action.MOVE_RIGHT: (1, 0),
-            Action.MOVE_UP: (0, -1),
-            Action.MOVE_DOWN: (0, 1),
+            Action.MOVE_UP: (0, 1),
+            Action.MOVE_DOWN: (0, -1),
         }
 
         match action:

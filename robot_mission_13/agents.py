@@ -88,7 +88,7 @@ class Robot(Agent):
                     if waste_x != agent_x:
                         return Action.MOVE_LEFT if waste_x < agent_x else Action.MOVE_RIGHT
                     elif waste_y != agent_y:
-                        return Action.MOVE_UP if waste_y < agent_y else Action.MOVE_DOWN
+                        return Action.MOVE_UP if waste_y > agent_y else Action.MOVE_DOWN
         return None
 
     def deliberate_seeking(self): # TODO pas aller plus loin qu'une case de frontière
@@ -101,7 +101,7 @@ class Robot(Agent):
         possible_moves = self.check_possible_directions()
         if possible_moves:
             return random.choice(possible_moves)
-        return Action.Do_NOTHING # Default action if no possible moves are available
+        return Action.DO_NOTHING # Default action if no possible moves are available
         
             
     
@@ -171,7 +171,7 @@ class RedAgent(Robot):
     def DeliberateCarrying(self):
         # Check if any of the neighbors are radioactivity agents that exceed the agent's tolerance
         radioactivity_neighbors = [neighbor for neighbor in self.knowledge["Neighbors"] if isinstance(neighbor, RadioactivityAgent)]
-        if len(radioactivity_neighbors) <= 6:
+        if len(radioactivity_neighbors) <= 6 in self.knowledge["Neighbors"]  : #TODO faire gaffe aux frontieres haut bas
             self.mode = AgentMode.CARRYING_AND_SEEKING_WASTE_UP
         return Action.MOVE_RIGHT
     
