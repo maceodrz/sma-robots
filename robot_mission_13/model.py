@@ -127,54 +127,47 @@ class WasteModelRed(mesa.Model):
     def do(self, agent, action):
         """Advance the model by one step."""
 
-        if action == Action.MOVE_LEFT and self.is_movement_possible(
-            agent, (agent.pos[0] - 1, agent.pos[1])
-        ):
-            self.grid.move_agent(agent, (agent.pos[0] - 1, agent.pos[1]))
-            agent.knowledge["LastActionWorked"] = True
+        movement_actions = {
+            Action.MOVE_LEFT: (-1, 0),
+            Action.MOVE_RIGHT: (1, 0),
+            Action.MOVE_UP: (0, -1),
+            Action.MOVE_DOWN: (0, 1),
+        }
 
-        elif action == Action.MOVE_RIGHT and self.is_movement_possible(
-            agent, (agent.pos[0] + 1, agent.pos[1])
-        ):
-            self.grid.move_agent(agent, (agent.pos[0] + 1, agent.pos[1]))
-            agent.knowledge["LastActionWorked"] = True
+        if action in movement_actions:
+            new_pos = (agent.pos[0] + movement_actions[action][0], agent.pos[1] + movement_actions[action][1])
+            if self.is_movement_possible(agent, new_pos):
+                self.grid.move_agent(agent, new_pos)
+                agent.knowledge["LastActionWorked"] = True
+                
 
-        elif action == Action.MOVE_UP and self.is_movement_possible(
-            agent, (agent.pos[0], agent.pos[1] - 1)
-        ):
-            self.grid.move_agent(agent, (agent.pos[0], agent.pos[1] - 1))
-            agent.knowledge["LastActionWorked"] = True
-
-        elif action == Action.MOVE_DOWN and self.is_movement_possible(
-            agent, (agent.pos[0], agent.pos[1] + 1)
-        ):
-            self.grid.move_agent(agent, (agent.pos[0], agent.pos[1] + 1))
-            agent.knowledge["LastActionWorked"] = True
-        elif action == Action.FUSION:  # TODO
-            if (
-                agent.knowledge["carrying"][0].color
-                == agent.knowledge["carrying"][1].color
-            ):
+        elif action == Action.FUSION:
+            carrying = agent.knowledge["carrying"]
+            if len(carrying) >= 2 and carrying[0].color == carrying[1].color:
                 agent.knowledge["carrying"] = [
                     WasteAgent.create_agents(model=self, n=1, color=Colors.YELLOW)[0]
                 ]
                 print(agent.knowledge["carrying"])
                 agent.knowledge["LastActionWorked"] = True
-            else:
-                agent.knowledge["LastActionWorked"] = False
-        elif action == Action.COLLECT:  # TODO
-            PossibleAgent = self.is_collect_possible(agent, agent.pos)
 
-            if PossibleAgent and PossibleAgent.pos:
-                self.grid.remove_agent(PossibleAgent)
-                agent.knowledge["carrying"].append(PossibleAgent)
+        elif action == Action.COLLECT:
+            possible_agent = self.is_collect_possible(agent, agent.pos)
+            if possible_agent and possible_agent.pos:
+                self.grid.remove_agent(possible_agent)
+                agent.knowledge["carrying"].append(possible_agent)
                 agent.knowledge["LastActionWorked"] = True
-            else:
-                agent.knowledge["LastActionWorked"] = False
+            
+        
+        elif action == Action.DROP:
+            if len(agent.knowledge["carrying"]) > 0:
+                DroppedAgent = agent.knowledge["carrying"].pop()
+                self.grid.add_agent(DroppedAgent, agent.pos)
+                agent.knowledge["LastActionWorked"] = True
+
         else:
             agent.knowledge["LastActionWorked"] = False
         return agent.knowledge
-
+    
     def step(self):
         self.agents.shuffle_do("step")
 
