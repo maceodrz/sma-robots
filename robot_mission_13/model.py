@@ -134,40 +134,39 @@ class WasteModelRed(mesa.Model):
             Action.MOVE_DOWN: (0, 1),
         }
 
-        if action in movement_actions:
-            new_pos = (agent.pos[0] + movement_actions[action][0], agent.pos[1] + movement_actions[action][1])
-            if self.is_movement_possible(agent, new_pos):
-                self.grid.move_agent(agent, new_pos)
-                agent.knowledge["LastActionWorked"] = True
-                
-
-        elif action == Action.FUSION:
-            carrying = agent.knowledge["carrying"]
-            if len(carrying) >= 2 and carrying[0].color == carrying[1].color:
-                agent.knowledge["carrying"] = [
-                    WasteAgent.create_agents(model=self, n=1, color=Colors.YELLOW)[0]
-                ]
-                print(agent.knowledge["carrying"])
-                agent.knowledge["LastActionWorked"] = True
-
-        elif action == Action.COLLECT:
-            possible_agent = self.is_collect_possible(agent, agent.pos)
-            if possible_agent and possible_agent.pos:
-                self.grid.remove_agent(possible_agent)
-                agent.knowledge["carrying"].append(possible_agent)
-                agent.knowledge["LastActionWorked"] = True
+        match action:
+            case action if action in movement_actions:
+                new_pos = (agent.pos[0] + movement_actions[action][0], agent.pos[1] + movement_actions[action][1])
+                if self.is_movement_possible(agent, new_pos):
+                    self.grid.move_agent(agent, new_pos)
+                    agent.knowledge["LastActionWorked"] = True
             
+            case Action.FUSION:
+                carrying = agent.knowledge["carrying"]
+                if len(carrying) >= 2 and carrying[0].color == carrying[1].color:
+                    agent.knowledge["carrying"] = [
+                    WasteAgent.create_agents(model=self, n=1, color=Colors.YELLOW)[0]
+                    ]
+                    print(agent.knowledge["carrying"])
+                    agent.knowledge["LastActionWorked"] = True
+                
+            case Action.COLLECT:
+                possible_agent = self.is_collect_possible(agent, agent.pos)
+                if possible_agent and possible_agent.pos:
+                    self.grid.remove_agent(possible_agent)
+                    agent.knowledge["carrying"].append(possible_agent)
+                    agent.knowledge["LastActionWorked"] = True
+                
+            case Action.DROP:
+                if len(agent.knowledge["carrying"]) > 0:
+                    DroppedAgent = agent.knowledge["carrying"].pop()
+                    agent.knowledge["LastActionWorked"] = True
+                    if not any( isinstance(cell_content, WasteDisposalAgent) for cell_content in self.grid.get_cell_list_contents([agent.pos])):
+                        self.grid.place_agent(DroppedAgent, agent.pos)
+            case _:
+                agent.knowledge["LastActionWorked"] = False
         
-        elif action == Action.DROP:
-            if len(agent.knowledge["carrying"]) > 0:
-                DroppedAgent = agent.knowledge["carrying"].pop()
-                self.grid.add_agent(DroppedAgent, agent.pos)
-                agent.knowledge["LastActionWorked"] = True
-
-        else:
-            agent.knowledge["LastActionWorked"] = False
         return agent.knowledge
-    
     def step(self):
         self.agents.shuffle_do("step")
 

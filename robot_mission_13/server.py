@@ -3,82 +3,66 @@ from objects import RadioactivityAgent, WasteDisposalAgent, WasteAgent
 from agents import Robot, GreenAgent, YellowAgent, RedAgent
 from mesa.visualization import SolaraViz, make_plot_component, make_space_component  # type: ignore
 
-
 def agent_portrayal(agent):
+    
+    cell_size = 200  # Ajuste la taille en fonction de la grille
+
     if isinstance(agent, RadioactivityAgent):
         if agent.get_radioactivity() > 0.66:
             return {
-                "color": "#FF00004C",  # Rouge avec transparence 0.8
-                "size": 400,
+                "color": "#FF00004C",
+                "size": cell_size,
                 "layer": "background",
                 "marker": "s",
-
             }
         elif agent.get_radioactivity() > 0.33:
             return {
-                "color": "#FFA5004C",  # Orange avec transparence 0.8
-                "size": 400,
+                "color": "#FFA5004C",
+                "size": cell_size,
                 "zorder": 1,
                 "marker": "s",
-                
-                
             }
         else:
             return {
-                "color": "#00FF004C",  # Vert avec transparence 0.8
-                "size": 400,
+                "color": "#00FF004C",
+                "size": cell_size,
                 "layer": "background",
                 "marker": "s",
-
             }
-    if isinstance(agent, GreenAgent):
-                return {
-                    "color": "darkgreen",
-                    "size": 50,
-                    "zorder": 2,
-                }
+    elif isinstance(agent, GreenAgent):
+        return {
+            "color": "darkgreen",
+            "size": cell_size // 8,
+            "zorder": 2,
+        }
     elif isinstance(agent, YellowAgent):
-                return {
-                    "color": "goldenrod",
-                    "size": 50,
-                    "zorder": 2,
-                }
+        return {
+            "color": "goldenrod",
+            "size": cell_size // 8,
+            "zorder": 2,
+        }
     elif isinstance(agent, RedAgent):
-                return {
-                    "color": "darkred",
-                    "size": 50,
-                    "zorder": 2,
-                }
+        return {
+            "color": "darkred",
+            "size": cell_size // 8,
+            "zorder": 2,
+        }
     elif isinstance(agent, WasteDisposalAgent):
         return {
             "color": "black",
-            "size": 200,
+            "size": cell_size // 2,
         }
     elif isinstance(agent, WasteAgent):
-        if agent.color == 0:
-            return {
-                "color": "green",
-                "shape": "s",
-                "size": 50//2,
-            }
-        elif agent.color == 1:
-            return {
-                "color": "yellow",
-                "shape": "s",
-                "size": 50//2,
-            }
-        elif agent.color == 2:
-            return {
-                "color": "red",
-                "shape": "s",
-                "size": 50//2,
-            }
+        return {
+            "color": ["green", "yellow", "red"][agent.color],
+            "shape": "s",
+            "size": cell_size // 4,
+        }
     else:
         return {
             "color": "white",
-            "size": 50,
+            "size": cell_size // 8,
         }
-
 
 model_params = { 
     'width': 21,
@@ -142,7 +126,10 @@ model_params_Slider = {
 
 waste_model = WasteModelRed(**model_params)
 
+
+
 SpaceGraph = make_space_component(agent_portrayal)
+
 
 page = SolaraViz(
     waste_model,
