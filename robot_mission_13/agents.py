@@ -140,8 +140,10 @@ class Robot(Agent):
 
 class GreenAgent(Robot):
     def __init__(self, model, unique_id):
-        super().__init__(model, unique_id, color=Colors.GREEN, max_radioactivity = 1/3)
+        super().__init__(model, unique_id)
         self.model = model
+        self.color = Colors.GREEN
+        self.max_radioactivity = 1/3
 
     # def deliberate(self, knowledge):
     #    return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
