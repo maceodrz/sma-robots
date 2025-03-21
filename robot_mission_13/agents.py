@@ -24,7 +24,7 @@ class AgentMode(Enum):
 
 
 class Robot(Agent):
-    def __init__(self, model, unique_id, color, max_radioactivity):
+    def __init__(self, model, unique_id, color = None, max_radioactivity = None ):
         super().__init__(model)
         self.percepts = {}
         
@@ -70,6 +70,9 @@ class Robot(Agent):
         return possible_moves
     
     def check_equivalent_waste(self):
+        if len(self.knowledge["carrying"]) == 2:
+            self.mode = AgentMode.CARRYING
+            return Action.FUSION
         # First, check if there is a waste in its neighbors
         for neighbor in self.knowledge["Neighbors"]:
             if isinstance(neighbor, WasteAgent) and neighbor.color == self.color:
@@ -102,33 +105,33 @@ class Robot(Agent):
         
             
     
-    def DeliberateCarrying(self, knowledge):
-        if any( neighbor.radioactivity > self.max_radioactivity for neighbor in knowledge["Neighbors"]):
+    def DeliberateCarrying(self):
+        if any( neighbor.radioactivity > self.max_radioactivity for neighbor in self.knowledge["Neighbors"]):
             self.mode = AgentMode.SEEKING
             return Action.DROP
         else:
             return Action.MOVE_RIGHT
     
-    def DeliberateSeeking(self, knowledge):
+    def DeliberateCarryingAndSeekingWaste(self):
         pass
     
     def deliberate(self):
         match self.mode:
             case AgentMode.SEEKING:
-                return self.DeliberateSeeking(self.knowledge)
+                return self.deliberate_seeking()
             case AgentMode.CARRYING:
-                return self.DeliberateCarrying(self.knowledge)
+                return self.DeliberateCarrying()
             case AgentMode.CARRYING_AND_SEEKING_WASTE_UP:
-                return self.DeliberateCarryingAndSeekingWaste(self.knowledge)
+                return self.DeliberateCarryingAndSeekingWaste()
             case AgentMode.CARRYING_AND_SEEKING_WASTE_DOWN:
-                return self.DeliberateCarryingAndSeekingWaste(self.knowledge)
+                return self.DeliberateCarryingAndSeekingWaste()
             case _:
             # Default case if none of the above match
                 return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
 
     def step_agent(self):
         self.knowledge = self.percept()
-        self.action = self.deliberate(self.knowledge)
+        self.action = self.deliberate()
         self.percepts = self.model.do(self, self.action)
 
     def step(self):
@@ -137,54 +140,8 @@ class Robot(Agent):
 
 class GreenAgent(Robot):
     def __init__(self, model, unique_id):
-        super().__init__(model, unique_id, color=Colors.GREEN, max_radioactivity=1/3)
+        super().__init__(model, unique_id, color=Colors.GREEN, max_radioactivity = 1/3)
         self.model = model
-
-    def deliberate(self, knowledge):
-        # If carrying 1 Yellow Waste
-        if (
-            len(knowledge["carrying"]) == 1
-            and knowledge["carrying"][0] == Colors.YELLOW
-        ):
-            # If the agent is not at east of green zone, move right
-            if any(
-                isinstance(RadioactivityAgent, neighbor)
-                for neighbor in knowledge["Neighbors"]
-            ):  # TODO change this to the actual position of the green zone
-                return Action.MOVE_LEFT
-            else:
-                # Drop the Yellow Waste
-                return Action.DROP
-        # If carrying 2 Green Wastes, delete them and create 1 Yellow Waste
-        elif len(knowledge["carrying"]) == 2:
-            return Action.FUSION
-
-        else:
-            for neighbor in knowledge["Neighbors"]:
-                if isinstance(neighbor, WasteAgent) and neighbor.color == Colors.GREEN:
-                    # If the waste is at the agent's position, collect it
-                    if neighbor.pos == self.pos:
-                        return Action.COLLECT
-                    # Otherwise, move towards the waste
-                    else:
-                        # Determine direction based on relative position
-                        waste_x, waste_y = neighbor.pos
-                        agent_x, agent_y = self.pos
-
-                        # Move horizontally first
-                        if waste_x < agent_x:
-                            return Action.MOVE_LEFT
-                        elif waste_x > agent_x:
-                            return Action.MOVE_RIGHT
-                        # Then move vertically
-                        elif waste_y < agent_y:
-                            return Action.MOVE_UP
-                        elif waste_y > agent_y:
-                            return Action.MOVE_DOWN
-            # If there is no Green Waste at the center, random move
-            return random.choice(
-                [Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN]
-            )
 
     # def deliberate(self, knowledge):
     #    return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
@@ -196,46 +153,6 @@ class YellowAgent(Robot):
         self.max_radioactivity = 2 / 3
         self.color = Colors.YELLOW
 
-    def deliberate(self, knowledge):
-        # If carrying 1 Red waste
-        if len(knowledge["carrying"]) == 1 and knowledge["carrying"][0] == Colors.RED:
-            # If the agent is not at the east of yellow zone, move right
-            if self.pos[0] > 1:  # TODO change this to the correct position
-                return Action.MOVE_RIGHT
-            else:
-                # Drop the Red Waste
-                return Action.DROP
-        # If carrying 2 Yellow Wastes, delete them and create 1 Yellow Waste
-        elif len(knowledge["carrying"]) == 2:
-            return Action.FUSION
-        # If there is Green Waste nearby, collect it
-        # If there is no Green Waste at the center, random move
-        else:
-            for neighbor in knowledge["Neighbors"]:
-                if isinstance(neighbor, WasteAgent) and neighbor.color == Colors.YELLOW:
-                    # If the waste is at the agent's position, collect it
-                    if neighbor.pos == self.pos:
-                        return Action.COLLECT
-                    # Otherwise, move towards the waste
-                    else:
-                        # Determine direction based on relative position
-                        waste_x, waste_y = neighbor.pos
-                        agent_x, agent_y = self.pos
-
-                        # Move horizontally first
-                        if waste_x < agent_x:
-                            return Action.MOVE_LEFT
-                        elif waste_x > agent_x:
-                            return Action.MOVE_RIGHT
-                        # Then move vertically
-                        elif waste_y < agent_y:
-                            return Action.MOVE_UP
-                        elif waste_y > agent_y:
-                            return Action.MOVE_DOWN
-            # If there is no Green Waste at the center, random move
-            return random.choice(
-                [Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN]
-            )
 
     # def deliberate(self, knowledge):
     #    return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
@@ -249,9 +166,9 @@ class RedAgent(Robot):
         self.MODE = "Random"  # TODO faut faire des modes en gros, en mode automate ou bieeeeeen là
 
 
-    def DeliberateCarrying(self, knowledge):
+    def DeliberateCarrying(self):
         # Check if any of the neighbors are radioactivity agents that exceed the agent's tolerance
-        radioactivity_neighbors = [neighbor for neighbor in knowledge["Neighbors"] if isinstance(neighbor, RadioactivityAgent)]
+        radioactivity_neighbors = [neighbor for neighbor in self.knowledge["Neighbors"] if isinstance(neighbor, RadioactivityAgent)]
         if len(radioactivity_neighbors) <= 4:
             self.mode = AgentMode.CARRYING_AND_SEEKING_WASTE_UP
         return Action.MOVE_RIGHT
@@ -267,65 +184,4 @@ class RedAgent(Robot):
             self.mode = AgentMode.CARRYING_AND_SEEKING_WASTE_DOWN
             return Action.MOVE_DOWN
 
-    def deliberate(self, knowledge):
-        # If carrying 1 Red waste
-        if (
-            len(knowledge["carrying"]) == 1
-            and knowledge["carrying"][0].color == Colors.RED
-        ):
-            # If the agent is not at the east of yellow zone, move right
-            if (
-                not any(
-                    isinstance(neighbor, WasteDisposalAgent)
-                    and neighbor.pos == self.pos
-                    for neighbor in knowledge["Neighbors"]
-                )
-                and knowledge["LastActionWorked"]
-            ):
-                return Action.MOVE_RIGHT
-            elif not any(
-                isinstance(neighbor, WasteDisposalAgent) and neighbor.pos == self.pos
-                for neighbor in knowledge["Neighbors"]
-            ):
-                if not knowledge["LastActionWorked"]:
-                    self.TopFlag = False
-                else:
-                    return Action.MOVE_UP
-            elif not any(
-                isinstance(neighbor, WasteDisposalAgent) and neighbor.pos == self.pos
-                for neighbor in knowledge["Neighbors"]
-            ):
-                return Action.MOVE_DOWN
-            else:
-                # Drop the Red Waste in the dustbin
-                return Action.DROP
-        # If there is no Green Waste at the center, random move
-        else:
-            for neighbor in knowledge["Neighbors"]:
-                if isinstance(neighbor, WasteAgent) and neighbor.color == Colors.RED:
-                    # If the waste is at the agent's position, collect it
-                    if neighbor.pos == self.pos:
-                        return Action.COLLECT
-                    # Otherwise, move towards the waste
-                    else:
-                        # Determine direction based on relative position
-                        waste_x, waste_y = neighbor.pos
-                        agent_x, agent_y = self.pos
-
-                        # Move horizontally first
-                        if waste_x < agent_x:
-                            return Action.MOVE_LEFT
-                        elif waste_x > agent_x:
-                            return Action.MOVE_RIGHT
-                        # Then move vertically
-                        elif waste_y < agent_y:
-                            return Action.MOVE_UP
-                        elif waste_y > agent_y:
-                            return Action.MOVE_DOWN
-            # If there is no Green Waste at the center, random move
-            return random.choice(
-                [Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN]
-            )
-
-    # def deliberate(self, knowledge):
-    #    return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
+    
