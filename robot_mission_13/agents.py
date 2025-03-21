@@ -106,7 +106,7 @@ class Robot(Agent):
             
     
     def DeliberateCarrying(self):
-        if any( neighbor.radioactivity > self.max_radioactivity for neighbor in self.knowledge["Neighbors"]):
+        if any( isinstance(RadioactivityAgent, neighbor) and neighbor.radioactivity > self.max_radioactivity for neighbor in self.knowledge["Neighbors"]):
             self.mode = AgentMode.SEEKING
             return Action.DROP
         else:
@@ -163,7 +163,7 @@ class RedAgent(Robot):
         super().__init__(model, unique_id)
         self.max_radioactivity = 1
         self.color = Colors.RED
-        self.MODE = "Random"  # TODO faut faire des modes en gros, en mode automate ou bieeeeeen là
+        
 
 
     def DeliberateCarrying(self):
