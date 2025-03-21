@@ -106,7 +106,7 @@ class Robot(Agent):
             
     
     def DeliberateCarrying(self):
-        if any( isinstance(RadioactivityAgent, neighbor) and neighbor.radioactivity > self.max_radioactivity for neighbor in self.knowledge["Neighbors"]):
+        if any( isinstance(neighbor, RadioactivityAgent) and neighbor.radioactivity > self.max_radioactivity for neighbor in self.knowledge["Neighbors"]):
             self.mode = AgentMode.SEEKING
             return Action.DROP
         else:

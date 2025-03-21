@@ -145,7 +145,7 @@ class WasteModelRed(mesa.Model):
                 carrying = agent.knowledge["carrying"]
                 if len(carrying) >= 2 and carrying[0].color == carrying[1].color:
                     agent.knowledge["carrying"] = [
-                    WasteAgent.create_agents(model=self, n=1, color=Colors.YELLOW)[0]
+                    WasteAgent.create_agents(model=self, n=1, color=agent.color + 1)[0]
                     ]
                     print(agent.knowledge["carrying"])
                     agent.knowledge["LastActionWorked"] = True

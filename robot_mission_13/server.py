@@ -63,7 +63,7 @@ def agent_portrayal(agent):
             }
         elif agent.color == 1:
             return {
-                "color": "yellow",
+                "color": "orange",
                 "shape": "s",
                 "size": 50//2,
             }
@@ -87,7 +87,7 @@ model_params = {
     'num_yellow_agents': 3,
     'num_red_agents': 3,
     'num_green_waste': 3,
-    'num_yellow_waste': 0,
+    'num_yellow_waste': 3,
     'num_red_waste': 5,
     'proportion_z3': 1/3,
     'proportion_z2': 1/3,
@@ -137,6 +137,21 @@ model_params_Slider = {
         "min": 0,
         "max": 10,
     },
+    "num_yellow_waste": {
+        "name": "Number of Green Waste",
+        "type": "SliderInt",
+        "value": 3,
+        "min": 0,
+        "max": 10,
+    },
+    "num_red_waste": {
+        "name": "Number of Green Waste",
+        "type": "SliderInt",
+        "value": 3,
+        "min": 0,
+        "max": 10,
+    },
+    
     
 }
 
