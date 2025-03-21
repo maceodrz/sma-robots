@@ -52,10 +52,12 @@ class GreenAgent(Robot):
     
     def deliberate(self, knowledge):
         # If carrying 1 Yellow Waste
-        if len(knowledge["carrying"]) == 1 and knowledge["carrying"][0] == Colors.YELLOW:
+        if len(knowledge["carrying"]) == 1 and knowledge["carrying"][0].color == Colors.YELLOW:
             # If the agent is not at east of green zone, move right
-            if any( isinstance( RadioactivityAgent, neighbor ) for neighbor in knowledge["Neighbors"] ) : #TODO change this to the actual position of the green zone
-                return Action.MOVE_LEFT
+            pos_right = (self.pos[0] + 1, self.pos[1])
+            if self.model.is_movement_possible(self, pos_right):
+                print("Moving Right")
+                return Action.MOVE_RIGHT
             else:
             # Drop the Yellow Waste
                 return Action.DROP
