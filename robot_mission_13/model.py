@@ -147,7 +147,7 @@ class WasteModelRed(mesa.Model):
                     agent.knowledge["carrying"] = [
                     WasteAgent.create_agents(model=self, n=1, color=agent.color + 1)[0]
                     ]
-                    print(agent.knowledge["carrying"])
+                    print('je fusionne deux déchets de la couleur ', agent.color, 'à l endroit ', agent.pos)
                     agent.knowledge["LastActionWorked"] = True
                 
             case Action.COLLECT:
@@ -163,6 +163,7 @@ class WasteModelRed(mesa.Model):
                     agent.knowledge["LastActionWorked"] = True
                     if not any( isinstance(cell_content, WasteDisposalAgent) for cell_content in self.grid.get_cell_list_contents([agent.pos])):
                         self.grid.place_agent(DroppedAgent, agent.pos)
+                    print('je pose à cet endroit ', agent.pos, ' et je suis de la couleur ', agent.color)
             case _:
                 agent.knowledge["LastActionWorked"] = False
         
