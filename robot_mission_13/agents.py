@@ -14,10 +14,13 @@ class Action(Enum):
     DROP = 6
     DO_NOTHING = 7
     
+    
+    
 class AgentMode(Enum):
     SEEKING = 0
     CARRYING = 1
-    CARRYING_AND_SEEKING_WASTE = 2
+    CARRYING_AND_SEEKING_WASTE_UP = 2
+    CARRYING_AND_SEEKING_WASTE_DOWN = 3
 
 
 class Robot(Agent):
@@ -31,6 +34,8 @@ class Robot(Agent):
         self.color = color
         self.max_radioactivity = max_radioactivity
         self.model = model
+        self.color = None
+        self.mode = AgentMode.SEEKING
 
     def percept(self):
         self.knowledge["Neighbors"] = list(
@@ -97,8 +102,29 @@ class Robot(Agent):
         
             
     
-    def deliberate(self):
+    def DeliberateCarrying(self, knowledge):
+        if any( neighbor.radioactivity > self.max_radioactivity for neighbor in knowledge["Neighbors"]):
+            self.mode = AgentMode.SEEKING
+            return Action.DROP
+        else:
+            return Action.MOVE_RIGHT
+    
+    def DeliberateSeeking(self, knowledge):
         pass
+    
+    def deliberate(self):
+        match self.mode:
+            case AgentMode.SEEKING:
+                return self.DeliberateSeeking(self.knowledge)
+            case AgentMode.CARRYING:
+                return self.DeliberateCarrying(self.knowledge)
+            case AgentMode.CARRYING_AND_SEEKING_WASTE_UP:
+                return self.DeliberateCarryingAndSeekingWaste(self.knowledge)
+            case AgentMode.CARRYING_AND_SEEKING_WASTE_DOWN:
+                return self.DeliberateCarryingAndSeekingWaste(self.knowledge)
+            case _:
+            # Default case if none of the above match
+                return random.choice([Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN])
 
     def step_agent(self):
         self.knowledge = self.percept()
@@ -221,6 +247,25 @@ class RedAgent(Robot):
         self.max_radioactivity = 1
         self.color = Colors.RED
         self.MODE = "Random"  # TODO faut faire des modes en gros, en mode automate ou bieeeeeen là
+
+
+    def DeliberateCarrying(self, knowledge):
+        # Check if any of the neighbors are radioactivity agents that exceed the agent's tolerance
+        radioactivity_neighbors = [neighbor for neighbor in knowledge["Neighbors"] if isinstance(neighbor, RadioactivityAgent)]
+        if len(radioactivity_neighbors) <= 4:
+            self.mode = AgentMode.CARRYING_AND_SEEKING_WASTE_UP
+        return Action.MOVE_RIGHT
+    
+    def DeliberateCarryingAndSeekingWaste(self, knowledge):
+        if any( isinstance(WasteDisposalAgent, neighbor) for neighbor in knowledge["Neighbors"]):
+            self.mode = AgentMode.SEEKING
+            return Action.DROP
+        radioactivity_neighbors = [neighbor for neighbor in knowledge["Neighbors"] if isinstance(neighbor, RadioactivityAgent)]
+        if self.mode == AgentMode.CARRYING_AND_SEEKING_WASTE_UP and len(radioactivity_neighbors) > 3:
+            return Action.MOVE_UP
+        else:
+            self.mode = AgentMode.CARRYING_AND_SEEKING_WASTE_DOWN
+            return Action.MOVE_DOWN
 
     def deliberate(self, knowledge):
         # If carrying 1 Red waste
