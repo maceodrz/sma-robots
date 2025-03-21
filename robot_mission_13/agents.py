@@ -70,7 +70,7 @@ class Robot(Agent):
         return possible_moves
     
     def check_equivalent_waste(self):
-        if len(self.knowledge["carrying"]) == 2:
+        if len(self.knowledge["carrying"]) == 2 or len(self.knowledge["carrying"]) == 1 and self.color == Colors.RED :
             self.mode = AgentMode.CARRYING
             return Action.FUSION
         # First, check if there is a waste in its neighbors
@@ -169,16 +169,16 @@ class RedAgent(Robot):
     def DeliberateCarrying(self):
         # Check if any of the neighbors are radioactivity agents that exceed the agent's tolerance
         radioactivity_neighbors = [neighbor for neighbor in self.knowledge["Neighbors"] if isinstance(neighbor, RadioactivityAgent)]
-        if len(radioactivity_neighbors) <= 4:
+        if len(radioactivity_neighbors) <= 6:
             self.mode = AgentMode.CARRYING_AND_SEEKING_WASTE_UP
         return Action.MOVE_RIGHT
     
-    def DeliberateCarryingAndSeekingWaste(self, knowledge):
-        if any( isinstance(WasteDisposalAgent, neighbor) for neighbor in knowledge["Neighbors"]):
+    def DeliberateCarryingAndSeekingWaste(self):
+        if any( (isinstance(neighbor, WasteDisposalAgent) and neighbor.pos == self.pos) for neighbor in self.knowledge["Neighbors"] ) :
             self.mode = AgentMode.SEEKING
             return Action.DROP
-        radioactivity_neighbors = [neighbor for neighbor in knowledge["Neighbors"] if isinstance(neighbor, RadioactivityAgent)]
-        if self.mode == AgentMode.CARRYING_AND_SEEKING_WASTE_UP and len(radioactivity_neighbors) > 3:
+        radioactivity_neighbors = [neighbor for neighbor in self.knowledge["Neighbors"] if isinstance(neighbor, RadioactivityAgent)]
+        if self.mode == AgentMode.CARRYING_AND_SEEKING_WASTE_UP and len(radioactivity_neighbors) > 4:
             return Action.MOVE_UP
         else:
             self.mode = AgentMode.CARRYING_AND_SEEKING_WASTE_DOWN
