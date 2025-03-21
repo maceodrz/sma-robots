@@ -91,7 +91,7 @@ class Robot(Agent):
                         return Action.MOVE_UP if waste_y < agent_y else Action.MOVE_DOWN
         return None
 
-    def deliberate_seeking(self):
+    def deliberate_seeking(self): # TODO pas aller plus loin qu'une case de frontière
         action =  self.check_equivalent_waste()
         if action is not None:
             return action

@@ -5,6 +5,30 @@ from mesa.space import MultiGrid
 from mesa.datacollection import DataCollector
 
 
+def compute_waste_number(model, color=None):
+    
+    if color is None :
+        waste_agents = [
+            agent for agent in model.agents_by_type[WasteAgent]
+            if isinstance(agent, WasteAgent)
+        ]
+        return len(waste_agents)
+    
+    waste_agents = [
+        agent for agent in model.agents_by_type[WasteAgent]
+        if isinstance(agent, WasteAgent) and agent.color == color
+    ]
+    return len(waste_agents)
+
+def compute_waste_model_red(model):
+    return compute_waste_number(model, color=Colors.RED)
+
+def compute_waste_model_yellow(model):
+    return compute_waste_number(model, color=Colors.YELLOW)
+
+def compute_waste_model_green(model):
+    return compute_waste_number(model, color=Colors.GREEN)
+
 class WasteModelRed(mesa.Model):
     """A model with some number of agents."""
 
@@ -55,6 +79,20 @@ class WasteModelRed(mesa.Model):
         self._initialize_waste()
         self._initialize_agents()
         self._initialize_waste_disposal()
+        
+        self.datacollector = mesa.DataCollector(
+            model_reporters={"Wastes": compute_waste_number,
+                "Red Wastes": compute_waste_model_red,
+                "Yellow Wastes": compute_waste_model_yellow,
+                "Green Wastes": compute_waste_model_green,
+            },
+            agent_reporters={
+                "carrying": "carrying",
+                "LastActionWorked": "LastActionWorked",
+                "color": "color",
+            }, # TODO : voir lesquels sont utiles
+        )
+        self.datacollector.collect(self)
     
     def _initialize_radioactivity(self):
         zones = [(self.width_z1, 0.1), (self.width_z2, 0.5), (self.width_z3, 0.9)]
@@ -170,6 +208,7 @@ class WasteModelRed(mesa.Model):
         return agent.knowledge
     def step(self):
         self.agents.shuffle_do("step")
+        self.datacollector.collect(self)
 
     def get_radioactivity(self, i, j):
         for agent in self.grid.get_cell_list_contents([(i, j)]):

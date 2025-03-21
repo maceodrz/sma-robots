@@ -158,10 +158,15 @@ model_params_Slider = {
 waste_model = WasteModelRed(**model_params)
 
 SpaceGraph = make_space_component(agent_portrayal)
+WastePlot = make_plot_component("Wastes")
+WasteRed = make_plot_component("Red Wastes")
+WasteGreen = make_plot_component("Green Wastes")
+WasteYellow = make_plot_component("Yellow Wastes")
+# TODO définir mieux KPIs
 
 page = SolaraViz(
     waste_model,
-    [SpaceGraph],
+    [SpaceGraph, WastePlot, WasteRed, WasteGreen, WasteYellow],
     name="Waste Robots, les nazes",
     model_params = model_params_Slider,
 )
