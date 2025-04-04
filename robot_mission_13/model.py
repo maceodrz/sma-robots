@@ -99,11 +99,11 @@ class WasteModel(mesa.Model):
                 "Yellow Wastes": compute_waste_model_yellow,
                 "Green Wastes": compute_waste_model_green,
             },
-            agent_reporters={
+            agenttype_reporters={RedAgent:{
                 "carrying": "carrying",
                 "LastActionNotWorked": "LastActionNotWorked",
                 "color": "color",
-            },  # TODO : voir lesquels sont utiles
+            }},  # TODO : voir lesquels sont utiles
         )
         self.datacollector.collect(self)
 
@@ -268,9 +268,6 @@ class WasteModel(mesa.Model):
     def step(self):
         self.agents.shuffle_do("step")
         self.datacollector.collect(self)
-        if self.steps == 1000:
-            wastes_df = self.datacollector.get_agent_vars_dataframe()
-            
             
             
 
