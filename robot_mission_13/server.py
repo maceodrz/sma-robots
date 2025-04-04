@@ -12,7 +12,6 @@ def agent_portrayal(agent):
                 "size": 400,
                 "layer": "background",
                 "marker": "s",
-
             }
         elif agent.get_radioactivity() > 0.33:
             return {
@@ -20,8 +19,6 @@ def agent_portrayal(agent):
                 "size": 400,
                 "zorder": 1,
                 "marker": "s",
-                
-                
             }
         else:
             return {
@@ -29,26 +26,25 @@ def agent_portrayal(agent):
                 "size": 400,
                 "layer": "background",
                 "marker": "s",
-
             }
     if isinstance(agent, GreenAgent):
-                return {
-                    "color": "darkgreen",
-                    "size": 50,
-                    "zorder": 2,
-                }
+        return {
+            "color": "darkgreen",
+            "size": 50,
+            "zorder": 2,
+        }
     elif isinstance(agent, YellowAgent):
-                return {
-                    "color": "goldenrod",
-                    "size": 50,
-                    "zorder": 2,
-                }
+        return {
+            "color": "goldenrod",
+            "size": 50,
+            "zorder": 2,
+        }
     elif isinstance(agent, RedAgent):
-                return {
-                    "color": "darkred",
-                    "size": 50,
-                    "zorder": 2,
-                }
+        return {
+            "color": "darkred",
+            "size": 50,
+            "zorder": 2,
+        }
     elif isinstance(agent, WasteDisposalAgent):
         return {
             "color": "black",
@@ -59,19 +55,19 @@ def agent_portrayal(agent):
             return {
                 "color": "green",
                 "shape": "s",
-                "size": 50//2,
+                "size": 50 // 2,
             }
         elif agent.color == 1:
             return {
                 "color": "orange",
                 "shape": "s",
-                "size": 50//2,
+                "size": 50 // 2,
             }
         elif agent.color == 2:
             return {
                 "color": "red",
                 "shape": "s",
-                "size": 50//2,
+                "size": 50 // 2,
             }
     else:
         return {
@@ -80,18 +76,18 @@ def agent_portrayal(agent):
         }
 
 
-model_params = { 
-    'width': 21,
-    'height': 10,
-    'num_green_agents': 3,
-    'num_yellow_agents': 3,
-    'num_red_agents': 3,
-    'num_green_waste': 3,
-    'num_yellow_waste': 3,
-    'num_red_waste': 5,
-    'proportion_z3': 1/3,
-    'proportion_z2': 1/3,
-    'seed': None,
+model_params = {
+    "width": 21,
+    "height": 10,
+    "num_green_agents": 3,
+    "num_yellow_agents": 3,
+    "num_red_agents": 3,
+    "num_green_waste": 3,
+    "num_yellow_waste": 3,
+    "num_red_waste": 5,
+    "proportion_z3": 1 / 3,
+    "proportion_z2": 1 / 3,
+    "seed": None,
 }
 
 model_params_Slider = {
@@ -151,24 +147,21 @@ model_params_Slider = {
         "min": 0,
         "max": 10,
     },
-    
-    
 }
 
 waste_model = WasteModelRed(**model_params)
 
 SpaceGraph = make_space_component(agent_portrayal)
-WastePlot = make_plot_component("Wastes")
-WasteRed = make_plot_component("Red Wastes")
-WasteGreen = make_plot_component("Green Wastes")
-WasteYellow = make_plot_component("Yellow Wastes")
+WastePlot = make_plot_component(
+    ["Wastes", "Yellow Wastes", "Green Wastes", "Red Wastes"]
+)
 # TODO définir mieux KPIs
 
 page = SolaraViz(
     waste_model,
-    [SpaceGraph, WastePlot, WasteRed, WasteGreen, WasteYellow],
+    [SpaceGraph, WastePlot],
     name="Waste Robots, les nazes",
-    model_params = model_params_Slider,
+    model_params=model_params_Slider,
 )
 
 if __name__ == "__main__":

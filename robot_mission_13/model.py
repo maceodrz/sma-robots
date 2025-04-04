@@ -3,6 +3,7 @@ from objects import RadioactivityAgent, WasteAgent, WasteDisposalAgent, Colors
 from agents import GreenAgent, YellowAgent, RedAgent
 from strategy import Action
 from mesa.space import MultiGrid
+import pandas as pd
 
 
 def compute_waste_number(model, color=None):
@@ -260,6 +261,11 @@ class WasteModelRed(mesa.Model):
     def step(self):
         self.agents.shuffle_do("step")
         self.datacollector.collect(self)
+        if self.steps == 1000:
+            wastes_df = self.datacollector.get_agent_vars_dataframe()
+            
+            
+            
 
     def get_radioactivity(self, i, j):
         for agent in self.grid.get_cell_list_contents([(i, j)]):
