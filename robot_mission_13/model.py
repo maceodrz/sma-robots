@@ -7,7 +7,6 @@ import pandas as pd
 
 
 def compute_waste_number(model, color=None):
-
     if color is None:
         waste_agents = [
             agent
@@ -151,7 +150,9 @@ class WasteModelRed(mesa.Model):
                     range(
                         self.width_z1
                         if color == "green"
-                        else self.width_z2 if color == "yellow" else self.width_z3
+                        else self.width_z2
+                        if color == "yellow"
+                        else self.width_z3
                     )
                 )
                 y = self.random.choice(range(self.height))

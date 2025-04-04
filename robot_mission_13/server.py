@@ -147,6 +147,14 @@ model_params_Slider = {
         "min": 0,
         "max": 10,
     },
+    "Choix Stratégie": {
+        "name": "Choix Stratégie",
+        "type": "Select",
+        "value": "Random",
+        "options": ["Random", "Greedy", "Dijkstra"],
+    },
+    
+    
 }
 
 waste_model = WasteModelRed(**model_params)
