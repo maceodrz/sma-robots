@@ -1,6 +1,6 @@
-from model import WasteModelRed
+from model import WasteModel
 from objects import RadioactivityAgent, WasteDisposalAgent, WasteAgent
-from agents import GreenAgent, YellowAgent, RedAgent
+from agents import GreenAgent, YellowAgent, RedAgent, Class_Strat
 from mesa.visualization import SolaraViz, make_plot_component, make_space_component
 
 
@@ -87,6 +87,7 @@ model_params = {
     "num_red_waste": 5,
     "proportion_z3": 1 / 3,
     "proportion_z2": 1 / 3,
+    "Strategy": "Random",
     "seed": None,
 }
 
@@ -147,17 +148,17 @@ model_params_Slider = {
         "min": 0,
         "max": 10,
     },
-    "Choix Stratégie": {
+    "Strategy": {
         "name": "Choix Stratégie",
         "type": "Select",
         "value": "Random",
-        "options": ["Random", "Greedy", "Dijkstra"],
+        "values": Class_Strat.keys(),
     },
     
     
 }
 
-waste_model = WasteModelRed(**model_params)
+waste_model = WasteModel(**model_params)
 
 SpaceGraph = make_space_component(agent_portrayal)
 WastePlot = make_plot_component(

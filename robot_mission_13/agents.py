@@ -1,8 +1,10 @@
 from mesa import Agent
 from objects import Colors
-from strategy import StrategyRandom, AgentMode
+from strategy import StrategyRandom
 
-
+Class_Strat = {
+    "Random": StrategyRandom,
+}
 class Robot(Agent):
     def __init__(self, model, unique_id, color=None, max_radioactivity=None):
         super().__init__(model)
@@ -36,23 +38,23 @@ class Robot(Agent):
 
 
 class GreenAgent(Robot):
-    def __init__(self, model, unique_id):
+    def __init__(self, model, unique_id, Strategy=None):
         super().__init__(model, unique_id)
         self.model = model
         self.color = Colors.GREEN
         self.max_radioactivity = 1 / 3
-        self.strategy = StrategyRandom(model, self)
+        self.strategy = Class_Strat[Strategy](model, self)
 
 class YellowAgent(Robot):
-    def __init__(self, model, unique_id):
+    def __init__(self, model, unique_id, Strategy=None):
         super().__init__(model, unique_id)
         self.max_radioactivity = 2 / 3
         self.color = Colors.YELLOW
-        self.strategy = StrategyRandom(model, self)
+        self.strategy = Class_Strat[Strategy](model, self)
 
 class RedAgent(Robot):
-    def __init__(self, model, unique_id):
+    def __init__(self, model, unique_id, Strategy=None):
         super().__init__(model, unique_id)
         self.max_radioactivity = 1
         self.color = Colors.RED
-        self.strategy = StrategyRandom(model, self)
+        self.strategy = Class_Strat[Strategy](model, self)

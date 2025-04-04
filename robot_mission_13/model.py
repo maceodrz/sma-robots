@@ -3,7 +3,6 @@ from objects import RadioactivityAgent, WasteAgent, WasteDisposalAgent, Colors
 from agents import GreenAgent, YellowAgent, RedAgent
 from strategy import Action
 from mesa.space import MultiGrid
-import pandas as pd
 
 
 def compute_waste_number(model, color=None):
@@ -35,7 +34,7 @@ def compute_waste_model_green(model):
     return compute_waste_number(model, color=Colors.GREEN)
 
 
-class WasteModelRed(mesa.Model):
+class WasteModel(mesa.Model):
     """A model with some number of agents."""
 
     def next_id(self):
@@ -55,6 +54,7 @@ class WasteModelRed(mesa.Model):
         num_red_waste=5,
         proportion_z3=1 / 3,
         proportion_z2=1 / 3,
+        Strategy = "Random",
         seed=None,
     ):
         super().__init__(seed=seed)
@@ -62,6 +62,7 @@ class WasteModelRed(mesa.Model):
         self.grid = MultiGrid(width, height, torus=False)
         self.width = width
         self.height = height
+        self.Strategy = Strategy
 
         # Calculate zone widths
         self.width_z3 = int(width * proportion_z3)
@@ -145,7 +146,7 @@ class WasteModelRed(mesa.Model):
         for color, num in self.num_agents.items():
             for _ in range(num):
                 unique_id = self.next_id()
-                agent = agent_classes[color](self, unique_id)
+                agent = agent_classes[color](self, unique_id, self.Strategy)
                 x = self.random.choice(
                     range(
                         self.width_z1
