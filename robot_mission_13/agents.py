@@ -10,7 +10,7 @@ class Robot(Agent):
         super().__init__(model)
         self.percepts = {}
 
-        self.knowledge = {"Neighbors": [], "carrying": [], "LastActionNotWorked": None}
+        self.knowledge = {"Neighbors": [], "carrying": [], "LastActionNotWorked": None, "DroppedLast": None}
         self.unique_id = unique_id
         self.action = None
         self.color = color
@@ -26,6 +26,11 @@ class Robot(Agent):
                 self.pos, moore=True, include_center=True, radius=1
             )
         )
+        if self.knowledge["DroppedLast"] is not None:
+            if self.knowledge["DroppedLast"][1] == 0:
+                self.knowledge["DroppedLast"] = None
+            else:
+                self.knowledge["DroppedLast"][1] -= 1
         return self.knowledge
 
     def step_agent(self):

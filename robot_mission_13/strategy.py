@@ -91,10 +91,10 @@ class StrategyRandom(Strategy):
         for neighbor in self.agent.knowledge["Neighbors"]:
             if isinstance(neighbor, WasteAgent) and neighbor.color == self.agent.color:
                 # If the waste is at the agent's position, collect it
-                if neighbor.pos == self.agent.pos:
+                if neighbor.pos == self.agent.pos and (self.agent.knowledge["DroppedLast"] is None or neighbor != self.agent.knowledge["DroppedLast"][0]) :
                     return Action.COLLECT
                 # Otherwise, move towards the waste
-                else:
+                elif neighbor != self.agent.knowledge["DroppedLast"]is None or neighbor != self.agent.knowledge["DroppedLast"][0]:
                     # Determine direction based on relative position
                     waste_x, waste_y = neighbor.pos
                     agent_x, agent_y = self.agent.pos
@@ -108,6 +108,10 @@ class StrategyRandom(Strategy):
         return None
 
     def deliberate_seeking(self):
+        if len(self.agent.knowledge["carrying"]) == 1 and self.agent.color != Colors.RED and random.random() < 0.05:
+            self.agent.knowledge["DroppedLast"] = [self.agent.knowledge["carrying"][0], 10]
+            return Action.DROP
+
         action = self.check_equivalent_waste()
         if action is not None:
             return action
