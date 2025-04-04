@@ -36,25 +36,25 @@ class Strategy:
 
         # Check if there is no neighbor more to the left
         if not any(
-            neighbor.pos[0] < self.pos[0] for neighbor in self.agent.knowledge["Neighbors"]
+            neighbor.pos[0] < self.agent.pos[0] for neighbor in self.agent.knowledge["Neighbors"]
         ):
             possible_moves.remove(Action.MOVE_LEFT)
 
         # Check if there is no neighbor more to the right
         if not any(
-            neighbor.pos[0] > self.pos[0] for neighbor in self.agent.knowledge["Neighbors"]
+            neighbor.pos[0] > self.agent.pos[0] for neighbor in self.agent.knowledge["Neighbors"]
         ):
             possible_moves.remove(Action.MOVE_RIGHT)
 
         # Check if there is no neighbor more above
         if not any(
-            neighbor.pos[1] > self.pos[1] for neighbor in self.agent.knowledge["Neighbors"]
+            neighbor.pos[1] > self.agent.pos[1] for neighbor in self.agent.knowledge["Neighbors"]
         ):
             possible_moves.remove(Action.MOVE_UP)
 
         # Check if there is no neighbor more below
         if not any(
-            neighbor.pos[1] < self.pos[1] for neighbor in self.agent.knowledge["Neighbors"]
+            neighbor.pos[1] < self.agent.pos[1] for neighbor in self.agent.knowledge["Neighbors"]
         ):
             possible_moves.remove(Action.MOVE_DOWN)
 
@@ -65,6 +65,15 @@ class Strategy:
             for neighbor in self.agent.knowledge["Neighbors"]
         ):
             possible_moves.remove(Action.MOVE_RIGHT)
+        
+        #If I am a red/Yellow agent, I don't want to go further than one step in the yellow zone
+        if (self.agent.color in [ Colors.RED, Colors.YELLOW ]) and any(
+            isinstance(neighbor, RadioactivityAgent)
+            and neighbor.pos == self.agent.pos
+            and neighbor.radioactivity <= self.agent.max_radioactivity - 1/3
+            for neighbor in self.agent.knowledge["Neighbors"]
+            ):
+            possible_moves.remove(Action.MOVE_LEFT)
         return possible_moves
 
     def deliberate(self):
@@ -105,12 +114,7 @@ class StrategyRandom(Strategy):
 
         # If there is no Waste besides, random move if possible :
         # Exclusion of impossible moves :
-        possible_moves = [
-            Action.MOVE_LEFT,
-            Action.MOVE_RIGHT,
-            Action.MOVE_UP,
-            Action.MOVE_DOWN,
-        ]
+        possible_moves = self.check_possible_directions()
         if possible_moves:
             return random.choice(possible_moves)
         return Action.DO_NOTHING  # Default action if no possible moves are available
