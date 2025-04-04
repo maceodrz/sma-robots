@@ -6,33 +6,14 @@ import os
 import matplotlib.pyplot as plt
 
 
-def save_waste_df(model, output_path):
+def save_waste_df(waste_dfs, output_path):
     """
     Save the waste data frame to a CSV file.
     """
-    waste_df = model.datacollector.get_model_vars_dataframe()
-
-    waste_df.to_csv(output_path, index=False)
-
-
-def run_and_save(model_config, output_path):
-    """
-    Run the model and save the waste data frame to a CSV file.
-    """
-    # Create the model
-    model = WasteModel(**model_config)
-    start_time = time()
-    # Run the model
-    for i in tqdm(range(400)):
-        model.step()
-    end_time = time()
-
-    # Print the elapsed time
-    elapsed_time = end_time - start_time
-    print(f"Elapsed time: {elapsed_time:.2f} seconds")
-    # Save the waste data frame
-    save_waste_df(model, output_path)
-    plot_waste(output_path, elapsed_time)
+    # Combine all dataframes in waste_dfs by calculating the mean
+    combined_df = pd.concat(waste_dfs).groupby(level=0).mean()
+    # Save the combined dataframe to a CSV file
+    combined_df.to_csv(output_path, index=False)
 
 def extract_min_index_min_value(df, column_name):
     """
@@ -45,6 +26,51 @@ def extract_min_index_min_value(df, column_name):
     else:
         print(f"Column '{column_name}' not found in the DataFrame.")
         return None, None
+
+def extract_data_of_interest(df, data_dict):
+    min_green_index, min_green_value = extract_min_index_min_value(df, 'Green Wastes')
+    min_yellow_index, min_yellow_value = extract_min_index_min_value(df, 'Yellow Wastes')
+    min_total_index, min_total_value = extract_min_index_min_value(df, 'Wastes')
+    min_red_index, min_red_value = extract_min_index_min_value(df, 'Red Wastes')
+    
+    # Append the data to the dictionary
+    data_dict['red'].append([min_red_index, min_red_value])
+    data_dict['green'].append([min_green_index, min_green_value])
+    data_dict['yellow'].append([min_yellow_index, min_yellow_value])
+    data_dict['total'].append([min_total_index, min_total_value])
+    return data_dict
+
+def run_and_save(model_config, output_path, batch_size=100):
+    """
+    Run the model and save the waste data frame to a CSV file.
+    """
+    start_time = time()
+    waste_dfs = []
+    data_dict = {
+        'green':[],
+        'yellow':[],
+        'red':[],
+        'total':[]
+    }
+    for iter in range(batch_size):
+        # Create the model
+        model = WasteModel(**model_config)
+        # Run the model
+        for i in range(700):
+            model.step()
+        # Collect data
+        waste_dfs.append(model.datacollector.get_model_vars_dataframe())
+        data_dict = extract_data_of_interest(waste_dfs[iter], data_dict)
+        
+    end_time = time()
+
+    # Print the elapsed time
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time: {elapsed_time:.2f} seconds")
+    # Save the waste data frame
+    save_waste_df(waste_dfs, output_path)
+    plot_waste(output_path, elapsed_time)
+
 def plot_waste(waste_df_path, elapsed_time):
     # Load the waste data frame from the CSV file
     waste_df = pd.read_csv(waste_df_path)
@@ -123,10 +149,10 @@ if __name__ == "__main__":
         "height": 10,
         "num_green_agents": 3,
         "num_yellow_agents": 3,
-        "num_red_agents": 10,
+        "num_red_agents": 3,
         "num_green_waste": 10,
         "num_yellow_waste": 10,
-        "num_red_waste": 5,
+        "num_red_waste": 10,
         "proportion_z3": 1 / 3,
         "proportion_z2": 1 / 3,
         "seed": None,

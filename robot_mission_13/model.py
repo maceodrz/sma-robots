@@ -220,12 +220,12 @@ class WasteModel(mesa.Model):
                         )[0]
                     ]
 
-                    print(
-                        "je fusionne deux déchets de la couleur ",
-                        agent.color,
-                        "à l endroit ",
-                        agent.pos,
-                    )
+                    # print(
+                    #     "je fusionne deux déchets de la couleur ",
+                    #     agent.color,
+                    #     "à l endroit ",
+                    #     agent.pos,
+                    # )
                     agent.knowledge["LastActionNotWorked"] = None
                 else:
                     agent.knowledge["LastActionNotWorked"] = action
@@ -252,12 +252,12 @@ class WasteModel(mesa.Model):
                         DroppedAgent.remove()
                     else:
                         self.grid.place_agent(DroppedAgent, agent.pos)
-                    print(
-                        "je pose à cet endroit ",
-                        agent.pos,
-                        " et je suis de la couleur ",
-                        agent.color,
-                    )
+                    # print(
+                    #     "je pose à cet endroit ",
+                    #     agent.pos,
+                    #     " et je suis de la couleur ",
+                    #     agent.color,
+                    # )
                 else:
                     agent.knowledge["LastActionNotWorked"] = action
             case _:
