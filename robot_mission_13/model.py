@@ -208,8 +208,10 @@ class WasteModelRed(mesa.Model):
                 if len(agent.knowledge["carrying"]) > 0:
                     DroppedAgent = agent.knowledge["carrying"].pop()
                     agent.knowledge["LastActionNotWorked"] = None
-                    if not any( isinstance(cell_content, WasteDisposalAgent) for cell_content in self.grid.get_cell_list_contents([agent.pos])):
+                    if any( isinstance(cell_content, WasteDisposalAgent) for cell_content in self.grid.get_cell_list_contents([agent.pos])):
                         DroppedAgent.remove()
+                    else:
+                        self.grid.place_agent(DroppedAgent, agent.pos)
                     print('je pose à cet endroit ', agent.pos, ' et je suis de la couleur ', agent.color)
                 else:
                     agent.knowledge["LastActionNotWorked"] = action
