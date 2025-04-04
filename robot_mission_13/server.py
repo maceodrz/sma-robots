@@ -1,7 +1,7 @@
 from model import WasteModelRed
 from objects import RadioactivityAgent, WasteDisposalAgent, WasteAgent
-from agents import Robot, GreenAgent, YellowAgent, RedAgent
-from mesa.visualization import SolaraViz, make_plot_component, make_space_component  # type: ignore
+from agents import GreenAgent, YellowAgent, RedAgent
+from mesa.visualization import SolaraViz, make_plot_component, make_space_component
 
 
 def agent_portrayal(agent):

@@ -1,8 +1,8 @@
 import mesa
 from objects import RadioactivityAgent, WasteAgent, WasteDisposalAgent, Colors
-from agents import GreenAgent, YellowAgent, RedAgent, Action
+from agents import GreenAgent, YellowAgent, RedAgent
+from strategy import Action
 from mesa.space import MultiGrid
-from mesa.datacollection import DataCollector
 
 
 def compute_waste_number(model, color=None):
