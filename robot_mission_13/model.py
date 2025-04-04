@@ -54,7 +54,9 @@ class WasteModel(mesa.Model):
         num_red_waste=5,
         proportion_z3=1 / 3,
         proportion_z2=1 / 3,
-        Strategy = "Random",
+        Strategy_Green = "Random",
+        Strategy_Yellow = "Random",
+        Strategy_Red = "Random",
         seed=None,
     ):
         super().__init__(seed=seed)
@@ -62,7 +64,10 @@ class WasteModel(mesa.Model):
         self.grid = MultiGrid(width, height, torus=False)
         self.width = width
         self.height = height
-        self.Strategy = Strategy
+        self.Strategy = {
+            "green": Strategy_Green,
+            "yellow": Strategy_Yellow,
+            "red": Strategy_Red,}
 
         # Calculate zone widths
         self.width_z3 = int(width * proportion_z3)
@@ -146,7 +151,7 @@ class WasteModel(mesa.Model):
         for color, num in self.num_agents.items():
             for _ in range(num):
                 unique_id = self.next_id()
-                agent = agent_classes[color](self, unique_id, self.Strategy)
+                agent = agent_classes[color](self, unique_id, self.Strategy[color])
                 x = self.random.choice(
                     range(
                         self.width_z1

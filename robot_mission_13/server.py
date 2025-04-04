@@ -87,7 +87,9 @@ model_params = {
     "num_red_waste": 5,
     "proportion_z3": 1 / 3,
     "proportion_z2": 1 / 3,
-    "Strategy": "Random",
+    "Strategy_Green": "Random",
+    "Strategy_Yellow": "Random",
+    "Strategy_Red": "Random",
     "seed": None,
 }
 
@@ -148,14 +150,25 @@ model_params_Slider = {
         "min": 0,
         "max": 10,
     },
-    "Strategy": {
+    "Strategy_Green": {
         "name": "Choix Stratégie",
         "type": "Select",
         "value": "Random",
-        "values": Class_Strat.keys(),
+        "values": list(Class_Strat.keys()),
     },
-    
-    
+    "Strategy_Yellow": {
+        "name": "Choix Stratégie",
+        "type": "Select",
+        "value": "Random",
+        "values": list(Class_Strat.keys()),
+    },
+    "Strategy_Red": {
+        "name": "Choix Stratégie",
+        "type": "Select",
+        "value": "Random",
+        "values": list(Class_Strat.keys()),
+    },
+
 }
 
 waste_model = WasteModel(**model_params)
