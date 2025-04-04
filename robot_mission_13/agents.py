@@ -28,7 +28,7 @@ class Robot(Agent):
         super().__init__(model)
         self.percepts = {}
         
-        self.knowledge = {"Neighbors": [], "carrying": [], "LastActionWorked": True}
+        self.knowledge = {"Neighbors": [], "carrying": [], "LastActionNotWorked": None}
         self.unique_id = unique_id
         self.action = None
         self.color = color
@@ -57,11 +57,11 @@ class Robot(Agent):
             possible_moves.remove(Action.MOVE_RIGHT)
 
         # Check if there is no neighbor more above
-        if not any(neighbor.pos[1] < self.pos[1] for neighbor in self.knowledge["Neighbors"]):
+        if not any(neighbor.pos[1] > self.pos[1] for neighbor in self.knowledge["Neighbors"]):
             possible_moves.remove(Action.MOVE_UP)
 
         # Check if there is no neighbor more below
-        if not any(neighbor.pos[1] > self.pos[1] for neighbor in self.knowledge["Neighbors"]):
+        if not any(neighbor.pos[1] < self.pos[1] for neighbor in self.knowledge["Neighbors"]):
             possible_moves.remove(Action.MOVE_DOWN)
         
         # Check if there is a neighbor with too much radioactivity
@@ -70,7 +70,7 @@ class Robot(Agent):
         return possible_moves
     
     def check_equivalent_waste(self):
-        if len(self.knowledge["carrying"]) == 2 or len(self.knowledge["carrying"]) == 1 and self.color == Colors.RED :
+        if len(self.knowledge["carrying"]) == 2 or (len(self.knowledge["carrying"]) == 1 and self.color == Colors.RED) :
             self.mode = AgentMode.CARRYING
             return Action.FUSION
         # First, check if there is a waste in its neighbors
@@ -98,7 +98,7 @@ class Robot(Agent):
 
         # If there is no Waste besides, random move if possible :
         # Exclusion of impossible moves : 
-        possible_moves = self.check_possible_directions()
+        possible_moves = [Action.MOVE_LEFT, Action.MOVE_RIGHT, Action.MOVE_UP, Action.MOVE_DOWN]
         if possible_moves:
             return random.choice(possible_moves)
         return Action.DO_NOTHING # Default action if no possible moves are available
@@ -170,8 +170,7 @@ class RedAgent(Robot):
 
     def DeliberateCarrying(self):
         # Check if any of the neighbors are radioactivity agents that exceed the agent's tolerance
-        radioactivity_neighbors = [neighbor for neighbor in self.knowledge["Neighbors"] if isinstance(neighbor, RadioactivityAgent)]
-        if len(radioactivity_neighbors) <= 6 in self.knowledge["Neighbors"]  : #TODO faire gaffe aux frontieres haut bas
+        if self.knowledge['LastActionNotWorked'] == Action.MOVE_RIGHT: #TODO faire gaffe aux frontieres haut bas
             self.mode = AgentMode.CARRYING_AND_SEEKING_WASTE_UP
         return Action.MOVE_RIGHT
     
@@ -179,8 +178,7 @@ class RedAgent(Robot):
         if any( (isinstance(neighbor, WasteDisposalAgent) and neighbor.pos == self.pos) for neighbor in self.knowledge["Neighbors"] ) :
             self.mode = AgentMode.SEEKING
             return Action.DROP
-        radioactivity_neighbors = [neighbor for neighbor in self.knowledge["Neighbors"] if isinstance(neighbor, RadioactivityAgent)]
-        if self.mode == AgentMode.CARRYING_AND_SEEKING_WASTE_UP and len(radioactivity_neighbors) > 4:
+        if not self.knowledge['LastActionNotWorked'] == Action.MOVE_UP and self.mode != AgentMode.CARRYING_AND_SEEKING_WASTE_DOWN:
             return Action.MOVE_UP
         else:
             self.mode = AgentMode.CARRYING_AND_SEEKING_WASTE_DOWN

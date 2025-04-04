@@ -6,6 +6,7 @@ class Colors:
     YELLOW = 1
     RED = 2
 
+
 class RadioactivityAgent(mesa.Agent):
     def __init__(self, model, radiocativity):
         """initialize a RadioactivityAgent instance.
@@ -16,12 +17,13 @@ class RadioactivityAgent(mesa.Agent):
         super().__init__(model)
         self.radioactivity = radiocativity
         self.unique_id = model.next_id()
-    
+
     def get_radioactivity(self):
         return self.radioactivity
 
+
 class WasteAgent(mesa.Agent):
-    def __init__(self, model, carried=False, color = None):
+    def __init__(self, model, carried=False, color=None):
         """initialize a WasteAgent instance.
 
         Args:
@@ -34,7 +36,7 @@ class WasteAgent(mesa.Agent):
             self.color = color
         self.carried = carried
         self.unique_id = model.next_id()
-    
+
     def init_color(self, carried):
         if not carried:
             cellmates = self.model.grid.get_cell_list_contents([self.pos])
@@ -47,9 +49,10 @@ class WasteAgent(mesa.Agent):
                     else:
                         self.color = Colors.GREEN
                     break
-    
+
     def destruct_agent(self):
         self.model.grid.remove_agent(self)
+
 
 class WasteDisposalAgent(mesa.Agent):
     def __init__(self, model):
