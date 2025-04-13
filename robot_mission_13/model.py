@@ -85,6 +85,7 @@ class WasteModel(mesa.Model):
             "yellow": num_yellow_waste,
             "red": num_red_waste,
         }
+        self.first_of_color = [False, False, False]
 
         self._next_id = 0
         self._initialize_radioactivity()
@@ -163,6 +164,7 @@ class WasteModel(mesa.Model):
                 )
                 y = self.random.choice(range(self.height))
                 self.grid.place_agent(agent, (start_x[color] + x, y))
+        
 
     def _initialize_waste_disposal(self):
         x = self.width - 1
@@ -262,7 +264,7 @@ class WasteModel(mesa.Model):
                     agent.knowledge["LastActionNotWorked"] = action
             case _:
                 agent.knowledge["LastActionNotWorked"] = action
-
+        agent.knowledge["LastAction"].append(action)
         return agent.knowledge
 
     def step(self):

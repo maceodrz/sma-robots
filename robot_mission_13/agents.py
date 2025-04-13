@@ -1,16 +1,17 @@
 from mesa import Agent
 from objects import Colors
-from strategy import StrategyRandom
+from strategy import StrategyRandom, FusionAndResearch, Action
 
 Class_Strat = {
     "Random": StrategyRandom,
+    "Fusion And Research": FusionAndResearch,
 }
 class Robot(Agent):
     def __init__(self, model, unique_id, color=None, max_radioactivity=None):
         super().__init__(model)
         self.percepts = {}
 
-        self.knowledge = {"Neighbors": [], "carrying": [], "LastActionNotWorked": None, "DroppedLast": None}
+        self.knowledge = {"Neighbors": [], "carrying": [], "LastActionNotWorked": None, "DroppedLast": None, "LastAction": [Action.DO_NOTHING]}
         self.unique_id = unique_id
         self.action = None
         self.color = color
@@ -18,7 +19,6 @@ class Robot(Agent):
         self.model = model
         self.color = None
         self.strategy = StrategyRandom(model, self)
-
 
     def percept(self):
         self.knowledge["Neighbors"] = list(
