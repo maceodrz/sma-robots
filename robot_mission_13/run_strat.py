@@ -10,8 +10,10 @@ def save_waste_df(waste_dfs, output_path):
     """
     Save the waste data frame to a CSV file.
     """
-    # Combine all dataframes in waste_dfs by calculating the mean
-    combined_df = pd.concat(waste_dfs).groupby(level=0).mean()
+    # Combine all dataframes in waste_dfs by calculating the mean and standard deviation
+    combined_df = pd.concat(waste_dfs).groupby(level=0).agg(['mean', 'std'])
+    # Flatten the multi-level columns
+    combined_df.columns = ['_'.join(col).strip() for col in combined_df.columns.values]
     # Save the combined dataframe to a CSV file
     combined_df.to_csv(output_path, index=False)
 
@@ -39,6 +41,87 @@ def extract_data_of_interest(df, data_dict):
     data_dict['yellow'].append([min_yellow_index, min_yellow_value])
     data_dict['total'].append([min_total_index, min_total_value])
     return data_dict
+
+def plot_waste(waste_df_path, elapsed_time, with_interval=True):
+    # Load the waste data frame from the CSV file
+    waste_df = pd.read_csv(waste_df_path)
+    # Find the first time step where 'Red Wastes' reaches zero
+    if 'Red Wastes_mean' in waste_df.columns:
+        zero_red_index = waste_df[waste_df['Red Wastes_mean'] == 0].index.min()
+        if not pd.notna(zero_red_index):
+            print("'Red Wastes_mean' never reaches zero.")
+    else:
+        print("'Red Wastes_mean' column not found in the data.")
+    min_green_index, min_green_value = extract_min_index_min_value(waste_df, 'Green Wastes_mean')
+    min_yellow_index, min_yellow_value = extract_min_index_min_value(waste_df, 'Yellow Wastes_mean')
+    min_total_index, min_total_value = extract_min_index_min_value(waste_df, 'Wastes_mean')
+
+    # Plot each column mean with optional 95% confidence interval
+    plt.figure(figsize=(10, 6))
+    color_map = {
+        'Green Wastes': 'green',
+        'Yellow Wastes': 'orange',
+        'Red Wastes': 'red',
+        'Wastes': 'grey'
+    }
+
+    for waste_type in ['Green Wastes', 'Yellow Wastes', 'Red Wastes', 'Wastes']:
+        mean_col = f"{waste_type}_mean"
+        std_col = f"{waste_type}_std"
+        if mean_col in waste_df.columns and std_col in waste_df.columns:
+            color = color_map.get(waste_type, None)
+            linestyle = '--' if waste_type == 'Wastes' else '-'
+            mean_values = waste_df[mean_col]
+            std_values = waste_df[std_col]
+            plt.plot(waste_df.index, mean_values, label=waste_type, color=color, linestyle=linestyle)
+            if with_interval:
+                ci_upper = mean_values + 1.96 * std_values
+                ci_lower = mean_values - 1.96 * std_values
+                plt.fill_between(waste_df.index, ci_lower, ci_upper, color=color, alpha=0.2)
+
+    # Add labels, title, and legend
+    plt.xlabel("Time Step")
+    plt.ylabel("Value")
+    plt.title("Waste Data Over Time with 95% Confidence Interval" if with_interval else "Waste Data Over Time")
+    plt.legend()
+    plt.grid()
+
+    # Annotate the minimum values on the plot
+    annotations = [
+        ("Min Green", min_green_index, min_green_value, 15, 'green', 'green'),
+        ("Min Yellow", min_yellow_index, min_yellow_value, 10, 'yellow', 'orange'),
+        ("Min Total", min_total_index, min_total_value, 7, 'black', 'black')
+    ]
+
+    for label, index, value, offset, arrow_color, text_color in annotations:
+        if pd.notna(index):
+            plt.annotate(f"{label}: {value} (Index: {index})",
+                         xy=(index, value),
+                         xytext=(index, value + offset),
+                         arrowprops=dict(facecolor=arrow_color, arrowstyle='->', lw=0.2),
+                         fontsize=9, color=text_color)
+    # Annotate the elapsed time on the plot
+    plt.annotate(f"Elapsed Time: {elapsed_time:.2f}s",
+                 xy=(0.05, 0.95),
+                 xycoords='axes fraction',
+                 fontsize=10,
+                 color='blue',
+                 bbox=dict(facecolor='white', alpha=0.8, edgecolor='blue'))
+
+    # Annotate the first time step where 'Red Wastes_mean' reaches zero
+    if pd.notna(zero_red_index):
+        plt.annotate(f"Zero Red Index: {zero_red_index}",
+                     xy=(zero_red_index, 0),
+                     xytext=(zero_red_index, 5),
+                     arrowprops=dict(facecolor='red', arrowstyle='->'),
+                     fontsize=9,
+                     color='red')
+
+    # Save the plot to a file
+    timestamp = time()
+    plot_path = f"data/waste_plots/waste_plot_{timestamp}.png"
+    plt.savefig(plot_path)
+
 
 def run_and_save(model_config, output_path, batch_size=100):
     """
@@ -71,76 +154,6 @@ def run_and_save(model_config, output_path, batch_size=100):
     save_waste_df(waste_dfs, output_path)
     plot_waste(output_path, elapsed_time)
 
-def plot_waste(waste_df_path, elapsed_time):
-    # Load the waste data frame from the CSV file
-    waste_df = pd.read_csv(waste_df_path)
-    # Find the first time step where 'Red Wastes' reaches zero
-    if 'Red Wastes' in waste_df.columns:
-        zero_red_index = waste_df[waste_df['Red Wastes'] == 0].index.min()
-        if not pd.notna(zero_red_index):
-            print("'Red Wastes' never reaches zero.")
-    else:
-        print("'Red Wastes' column not found in the data.")
-    min_green_index, min_green_value = extract_min_index_min_value(waste_df, 'Green Wastes')
-    min_yellow_index, min_yellow_value = extract_min_index_min_value(waste_df, 'Yellow Wastes')
-    min_total_index, min_total_value = extract_min_index_min_value(waste_df, 'Wastes')
-
-    # Plot each column as a curve
-    plt.figure(figsize=(10, 6))
-    color_map = {
-        'Green Wastes': 'green',
-        'Yellow Wastes': 'orange',
-        'Red Wastes': 'red',
-        'Wastes': 'grey'
-    }
-
-    for column in waste_df.columns:
-        color = color_map.get(column, None)
-        linestyle = '--' if column == 'Wastes' else '-'
-        plt.plot(waste_df.index, waste_df[column], label=column, color=color, linestyle=linestyle)
-
-    # Add labels, title, and legend
-    plt.xlabel("Time Step")
-    plt.ylabel("Value")
-    plt.title("Waste Data Over Time")
-    plt.legend()
-    plt.grid()
-
-    # Annotate the minimum values on the plot
-    annotations = [
-        ("Min Green", min_green_index, min_green_value, 15, 'green', 'green'),
-        ("Min Yellow", min_yellow_index, min_yellow_value, 10, 'yellow', 'orange'),
-        ("Min Total", min_total_index, min_total_value, 7, 'black', 'black')
-    ]
-
-    for label, index, value, offset, arrow_color, text_color in annotations:
-        if pd.notna(index):
-            plt.annotate(f"{label}: {value} (Index: {index})",
-                         xy=(index, value),
-                         xytext=(index, value + offset),
-                         arrowprops=dict(facecolor=arrow_color, arrowstyle='->', lw=0.2),
-                         fontsize=9, color=text_color)
-    # Annotate the elapsed time on the plot
-    plt.annotate(f"Elapsed Time: {elapsed_time:.2f}s",
-                 xy=(0.05, 0.95),
-                 xycoords='axes fraction',
-                 fontsize=10,
-                 color='blue',
-                 bbox=dict(facecolor='white', alpha=0.8, edgecolor='blue'))
-
-    # Annotate the first time step where 'Red Wastes' reaches zero
-    if pd.notna(zero_red_index):
-        plt.annotate(f"Zero Red Index: {zero_red_index}",
-                     xy=(zero_red_index, 0),
-                     xytext=(zero_red_index, 5),
-                     arrowprops=dict(facecolor='red', arrowstyle='->'),
-                     fontsize=9,
-                     color='red')
-
-    # Save the plot to a file
-    timestamp = time()
-    plot_path = f"data/waste_plots/waste_plot_{timestamp}.png"
-    plt.savefig(plot_path)
 
 
 if __name__ == "__main__":
@@ -150,15 +163,15 @@ if __name__ == "__main__":
         "num_green_agents": 3,
         "num_yellow_agents": 3,
         "num_red_agents": 3,
-        "num_green_waste": 10,
+        "num_green_waste": 12,
         "num_yellow_waste": 10,
         "num_red_waste": 10,
         "proportion_z3": 1 / 3,
         "proportion_z2": 1 / 3,
         "seed": None,
-        "Strategy_Green": "Random",
-        "Strategy_Yellow": "Random",
-        "Strategy_Red": "Random",
+        "Strategy_Green": "Fusion And Research",
+        "Strategy_Yellow": "Fusion And Research",
+        "Strategy_Red": "Fusion And Research",
     }
     timestamp = time()
     # Generate a timestamp for the output file
