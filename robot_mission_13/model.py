@@ -87,8 +87,10 @@ class WasteModel(mesa.Model):
             "red": num_red_waste,
         }
         self.first_of_color = [False, False, False]
-
-        self.__messages_service = MessageService(self)
+        if not MessageService.get_instance():
+            self.__messages_service = MessageService(self)
+        else:
+            self.__messages_service = MessageService.get_instance()
         self._next_id = 0
         self._initialize_radioactivity()
         self._initialize_waste()
