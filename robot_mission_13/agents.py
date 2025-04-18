@@ -1,17 +1,22 @@
 from mesa import Agent
 from objects import Colors
 from strategy import StrategyRandom, FusionAndResearch, Action
+from communication.agent.CommunicatingAgent import CommunicatingAgent
+from communication.message.Message import Message
+from communication.message.MessagePerformative import MessagePerformative
+from communication.message.MessageService import MessageService
+
 
 Class_Strat = {
     "Random": StrategyRandom,
     "Fusion And Research": FusionAndResearch,
 }
-class Robot(Agent):
+class Robot(CommunicatingAgent):
     def __init__(self, model, unique_id, color=None, max_radioactivity=None):
-        super().__init__(model)
+        super().__init__(model, unique_id)
         self.percepts = {}
 
-        self.knowledge = {"Neighbors": [], "carrying": [], "LastActionNotWorked": None, "DroppedLast": None, "LastAction": [Action.DO_NOTHING]}
+        self.knowledge = {"Neighbors": [], "carrying": [], "LastActionNotWorked": None, "DroppedLast": None, "LastAction": [Action.DO_NOTHING], "height": None, "width": None, "x": None, "y": None, "checked_rows": []}
         self.unique_id = unique_id
         self.action = None
         self.color = color

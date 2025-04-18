@@ -3,6 +3,7 @@ from objects import RadioactivityAgent, WasteAgent, WasteDisposalAgent, Colors
 from agents import GreenAgent, YellowAgent, RedAgent
 from strategy import Action
 from mesa.space import MultiGrid
+from communication.message.MessageService import MessageService
 
 
 def compute_waste_number(model, color=None):
@@ -87,6 +88,7 @@ class WasteModel(mesa.Model):
         }
         self.first_of_color = [False, False, False]
 
+        self.__messages_service = MessageService(self)
         self._next_id = 0
         self._initialize_radioactivity()
         self._initialize_waste()
@@ -205,6 +207,13 @@ class WasteModel(mesa.Model):
                     agent.pos[0] + movement_actions[action][0],
                     agent.pos[1] + movement_actions[action][1],
                 )
+                
+                if agent.knowledge["height"] is not None:
+                    agent.knowledge["height"] += action[1]
+                
+                if agent.knowledge["width"] is not None:
+                    agent.knowledge["width"] += action[0]
+                
                 if self.is_movement_possible(agent, new_pos):
                     self.grid.move_agent(agent, new_pos)
                     agent.knowledge["LastActionNotWorked"] = None
@@ -268,6 +277,7 @@ class WasteModel(mesa.Model):
         return agent.knowledge
 
     def step(self):
+        self.__messages_service.dispatch_messages()
         self.agents.shuffle_do("step")
         self.datacollector.collect(self)
             

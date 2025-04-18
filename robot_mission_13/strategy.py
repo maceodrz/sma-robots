@@ -358,7 +358,6 @@ class FusionAndResearch(Strategy):
         possible_moves = self.check_possible_directions()
         
         if self.agent.knowledge["LastAction"][-1] == top_or_down["Top or Down"]:
-            possible_moves = self.check_possible_directions()
             if Action.MOVE_LEFT in possible_moves:
                 return Action.MOVE_LEFT
             else:
@@ -468,3 +467,119 @@ class FusionAndResearch(Strategy):
                         Action.MOVE_DOWN,
                     ]
                 )
+
+
+class FusionAndResearchWithCommunication(FusionAndResearch):
+    
+    def deliberate_placing(self, action):
+        
+        
+        if len( self.agent.knowledge['carrying'] ) <= 2 and any(
+            isinstance(neighbor, WasteAgent)
+            and neighbor.color == self.agent.color
+            and neighbor.pos == self.agent.pos
+            for neighbor in self.agent.knowledge["Neighbors"]
+        ):
+            if self.agent_type != AgentModeFusionAndResearch.PLACING_FUSION or self.agent.color == Colors.RED:
+                self.mode = AgentModeFusionAndResearch.CARRYING
+            return Action.COLLECT
+        possible_moves = self.check_possible_directions()
+        if action in possible_moves:
+            return action
+        else:
+            match action:
+                case Action.MOVE_RIGHT:
+                    self.mode = AgentModeFusionAndResearch.FUSION
+                    return Action.MOVE_UP
+                case Action.MOVE_UP:
+                    self.agent.knowledge["y"] = -1
+                    self.mode = AgentModeFusionAndResearch.RESEARCHING_TOP
+                    return Action.MOVE_RIGHT
+                case Action.MOVE_DOWN:
+                    self.agent.knowledge["y"] = 1
+                    self.mode = AgentModeFusionAndResearch.RESEARCHING_DOWN
+                    return Action.MOVE_RIGHT
+                case Action.MOVE_LEFT:
+                    self.mode = AgentModeFusionAndResearch.FUSION
+                    return Action.MOVE_UP
+
+    def deliberate_research(self, top_or_down):
+        
+        if self.agent.knowledge["LastAction"][-1] == Action.DROP:
+            return Action.MOVE_LEFT
+        
+        elif len( self.agent.knowledge["carrying"]) > 0:
+            self.mode = AgentModeFusionAndResearch.CARRYING
+            return Action.MOVE_RIGHT
+        
+        elif any(
+            isinstance(neighbor, WasteAgent)
+            and neighbor.color == self.agent.color
+            and neighbor.pos == self.agent.pos
+            for neighbor in self.agent.knowledge["Neighbors"]
+        ):
+            self.mode = AgentModeFusionAndResearch.CARRYING
+            return Action.COLLECT
+        possible_moves = self.check_possible_directions()
+        
+        if self.agent.knowledge["x"] is None and Action.MOVE_RIGHT not in possible_moves:
+            self.agent.knowledge["x"] = 0
+            return Action.MOVE_LEFT
+        
+        if self.agent.knowledge["LastAction"][-1] == top_or_down["Top or Down"]:
+            if Action.MOVE_LEFT in possible_moves:
+                return Action.MOVE_LEFT
+            else:
+                return Action.MOVE_RIGHT
+            
+        elif top_or_down["Top or Down"] not in possible_moves and (Action.MOVE_LEFT not in possible_moves or Action.MOVE_RIGHT not in possible_moves):
+            self.mode = top_or_down["Change Mode"]
+            return top_or_down["Down or Top"]
+        
+        elif (Action.MOVE_LEFT not in possible_moves or Action.MOVE_RIGHT not in possible_moves):
+            if self.agent.knowledge["x"] != 0:
+                self.agent.knowledge["checked_rows"].append(self.agent.knowledge["y"])
+            return top_or_down["Top or Down"]
+        else:
+            return self.agent.knowledge["LastAction"][-1]
+        
+    def deliberate_fusion(self):
+        
+        if len(self.agent.knowledge["carrying"]) == 2:
+            return Action.FUSION
+        elif (
+            len(self.agent.knowledge["carrying"]) == 1
+            and self.agent.color + 1 == self.agent.knowledge["carrying"][0].color
+        ):
+            return Action.DROP
+        elif any(
+            isinstance(others, WasteAgent)
+            and others.color == self.agent.color
+            and others.pos == self.agent.pos
+            and others not in self.agent.knowledge["carrying"]
+            for others in self.agent.knowledge["Neighbors"]
+        ):
+            return Action.COLLECT
+        possible_directions = self.check_possible_directions()
+        if Action.MOVE_DOWN not in possible_directions:
+            if self.agent.knowledge["y"] is None:
+                self.agent.knowledge["y"] = 1
+            return Action.MOVE_UP
+        
+        elif Action.MOVE_UP not in possible_directions :
+            if self.agent.knowledge["y"] is None:
+                self.agent.knowledge["y"] = -1
+            elif self.agent.knowledge["height"] is None:
+                if self.agent.knowledge["y"] > 0:
+                    self.agent.knowledge["height"] = self.agent.knowledge["y"] - 1
+                    self.agent.knowledge["y"] = 0
+                else:
+                    self.agent.knowledge["height"] = self.agent.knowledge["y"] + 1
+                    self.agent.knowledge["y"] = self.agent.knowledge["height"]
+                
+            return Action.MOVE_DOWN
+
+        else:
+            for action in reversed(self.agent.knowledge["LastAction"]):
+                if action not in [Action.COLLECT, Action.FUSION, Action.DROP]:
+                    return action
