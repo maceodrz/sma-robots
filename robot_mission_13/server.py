@@ -5,6 +5,7 @@ from mesa.visualization import SolaraViz, make_plot_component, make_space_compon
 
 
 def agent_portrayal(agent):
+        
     if isinstance(agent, RadioactivityAgent):
         if agent.get_radioactivity() > 0.66:
             return {
@@ -69,8 +70,8 @@ def agent_portrayal(agent):
                 "shape": "s",
                 "size": 50 // 2,
             }
-    else:
-        return {
+    
+    return {
             "color": "white",
             "size": 50,
         }
@@ -177,7 +178,6 @@ SpaceGraph = make_space_component(agent_portrayal)
 WastePlot = make_plot_component(
     ["Wastes", "Yellow Wastes", "Green Wastes", "Red Wastes"]
 )
-# TODO définir mieux KPIs
 
 page = SolaraViz(
     waste_model,

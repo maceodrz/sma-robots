@@ -20,6 +20,10 @@ class RadioactivityAgent(mesa.Agent):
 
     def get_radioactivity(self):
         return self.radioactivity
+    
+    def step(self):
+        
+        pass
 
 
 class WasteAgent(mesa.Agent):
@@ -36,6 +40,10 @@ class WasteAgent(mesa.Agent):
             self.color = color
         self.carried = carried
         self.unique_id = model.next_id()
+    
+    def step(self):
+        
+        pass
 
     def init_color(self, carried):
         if not carried:
@@ -63,3 +71,7 @@ class WasteDisposalAgent(mesa.Agent):
         """
         super().__init__(model)
         self.unique_id = model.next_id()
+
+    def step(self):
+        
+        pass

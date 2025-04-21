@@ -1,9 +1,10 @@
 import mesa
 from objects import RadioactivityAgent, WasteAgent, WasteDisposalAgent, Colors
-from agents import GreenAgent, YellowAgent, RedAgent
+from agents import GreenAgent, YellowAgent, RedAgent, Robot
 from strategy import Action
 from mesa.space import MultiGrid
 from communication.message.MessageService import MessageService
+
 
 
 def compute_waste_number(model, color=None):
@@ -13,6 +14,7 @@ def compute_waste_number(model, color=None):
             for agent in model.agents_by_type[WasteAgent]
             if isinstance(agent, WasteAgent)
         ]
+        
         return len(waste_agents)
 
     waste_agents = [
@@ -87,10 +89,8 @@ class WasteModel(mesa.Model):
             "red": num_red_waste,
         }
         self.first_of_color = [False, False, False]
-        if not MessageService.get_instance():
-            self.__messages_service = MessageService(self)
-        else:
-            self.__messages_service = MessageService.get_instance()
+        
+        self.__messages_service = MessageService(self)
         self._next_id = 0
         self._initialize_radioactivity()
         self._initialize_waste()
@@ -211,10 +211,10 @@ class WasteModel(mesa.Model):
                 )
                 
                 if agent.knowledge["height"] is not None:
-                    agent.knowledge["height"] += action[1]
+                    agent.knowledge["height"] += movement_actions[action][1]
                 
                 if agent.knowledge["width"] is not None:
-                    agent.knowledge["width"] += action[0]
+                    agent.knowledge["width"] += movement_actions[action][0]
                 
                 if self.is_movement_possible(agent, new_pos):
                     self.grid.move_agent(agent, new_pos)
