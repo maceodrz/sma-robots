@@ -123,7 +123,7 @@ def plot_waste(waste_df_path, elapsed_time, with_interval=True):
     plt.savefig(plot_path)
 
 
-def run_and_save(model_config, output_path, batch_size=100):
+def run_and_save(model_config, output_path, batch_size=10):
     """
     Run the model and save the waste data frame to a CSV file.
     """
@@ -156,22 +156,113 @@ def run_and_save(model_config, output_path, batch_size=100):
 
 
 
+
+
+def run_model_results(strategies, tuples_green_yellow_red_waste, tuples_green_yellow_red_agents, largeur, hauteur):
+    """
+    Run the model with different strategies and configurations, and save the results.
+    """
+    results = []
+    for strategy in strategies:
+        for waste_tuple in tuples_green_yellow_red_waste:
+            for agent_tuple in tuples_green_yellow_red_agents:
+                config = {
+                    "width": largeur,
+                    "height": hauteur,
+                    "num_green_agents": agent_tuple[0],
+                    "num_yellow_agents": agent_tuple[1],
+                    "num_red_agents": agent_tuple[2],
+                    "num_green_waste": waste_tuple[0],
+                    "num_yellow_waste": waste_tuple[1],
+                    "num_red_waste": waste_tuple[2],
+                    "proportion_z3": 1 / 3,
+                    "proportion_z2": 1 / 3,
+                    "seed": None,
+                    "Strategy_Green": strategy,
+                    "Strategy_Yellow": strategy,
+                    "Strategy_Red": strategy,
+                }
+                timestamp = time()
+                os.makedirs("data/model_runs", exist_ok=True)
+                os.makedirs("data/waste_plots", exist_ok=True)
+                output_path = f"data/model_runs/waste_data_{timestamp}.csv"
+                
+                # Run the model and save results
+                start_time = time()
+                model = WasteModel(**config)
+                steps = 0
+                retry = False
+                while True:
+                    if retry:
+                        print("Retrying with same configuration...")
+                        model = WasteModel(**config)
+                        steps = 0
+                        retry = False
+                    model.step()
+                    steps += 1
+                    waste_df = model.datacollector.get_model_vars_dataframe()
+                    if 'Wastes' in waste_df.columns and waste_df['Wastes'].iloc[-1] == 0:
+                        break
+                    if steps >= 7000:
+                        retry=True
+                    
+                    
+                elapsed_time = time() - start_time
+                results.append({
+                    "strategy": strategy,
+                    "waste_tuple": waste_tuple,
+                    "agent_tuple": agent_tuple,
+                    "steps": steps,
+                    "elapsed_time": elapsed_time
+                })
+                print(f"Strategy: {strategy}, Waste: {waste_tuple}, Agents: {agent_tuple}, Steps: {steps}, Time: {elapsed_time:.2f}s")
+    timestamp = time()
+    # Save the results to a CSV file
+    results_df = pd.DataFrame(results)
+    results_output_path = f"data/model_runs/results_{timestamp}.csv"
+    results_df.to_csv(results_output_path, index=False)
+    print(f"Results saved to {results_output_path}")
+
 if __name__ == "__main__":
+    tuples_green_yellow_red_waste = [
+        (2, 1, 2),
+        (4, 2, 2),
+        (10, 5, 5),
+        (12, 10, 10),
+        (24, 10, 10),
+        (24, 20, 10),
+        (36, 20, 20),
+        (48, 20, 20)
+    ]
+    tuples_green_yellow_red_agents = [
+        # (2, 2, 2),
+        (3, 3, 3),
+        # (4, 4, 4)
+    ]
+
+    strategies = [
+        "Fusion And Research",
+        "Random",
+        "Fusion And Research With Communication"
+    ]
+    
+    # run_model_results(strategies, tuples_green_yellow_red_waste, tuples_green_yellow_red_agents, largeur = 41, hauteur = 20)
+
     config = {
         "width": 21,
-        "height": 10,
+        "height": 20,
         "num_green_agents": 3,
         "num_yellow_agents": 3,
         "num_red_agents": 3,
-        "num_green_waste": 12,
+        "num_green_waste": 20,
         "num_yellow_waste": 10,
         "num_red_waste": 10,
         "proportion_z3": 1 / 3,
         "proportion_z2": 1 / 3,
         "seed": None,
-        "Strategy_Green": "Fusion And Research",
-        "Strategy_Yellow": "Fusion And Research",
-        "Strategy_Red": "Fusion And Research",
+        "Strategy_Green": "Fusion And Research With Communication",
+        "Strategy_Yellow": "Fusion And Research With Communication",
+        "Strategy_Red": "Fusion And Research With Communication",
     }
     timestamp = time()
     # Generate a timestamp for the output file
@@ -179,4 +270,6 @@ if __name__ == "__main__":
     os.makedirs("data/model_runs", exist_ok=True)
     os.makedirs("data/waste_plots", exist_ok=True)
     output_path = f"data/model_runs/waste_data_{timestamp}.csv"
-    run_and_save(config, output_path)
+    run_and_save(config, output_path, batch_size=30)
+
+    
