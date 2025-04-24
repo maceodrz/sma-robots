@@ -139,7 +139,7 @@ def run_and_save(model_config, output_path, batch_size=10):
         # Create the model
         model = WasteModel(**model_config)
         # Run the model
-        for i in range(700):
+        for i in range(1000):
             model.step()
         # Collect data
         waste_dfs.append(model.datacollector.get_model_vars_dataframe())
